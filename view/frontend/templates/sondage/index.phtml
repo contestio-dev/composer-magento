@@ -1,0 +1,632 @@
+<?php
+// Get the URL of the current page
+$currentPageUrl = $this->getUrl('*/*/*', ['_current' => true, '_use_rewrite' => true]);
+// Remove last index/ at the end
+$currentPageUrl = str_replace('/index/', '/', $currentPageUrl);
+
+// Init variables
+$authfailed = 0;
+$serverError = 0;
+$notfound = 0;
+$surveyData = [];
+$navButtons = [];
+
+$isLogged = false;
+$pseudo = null;
+$firstname = null;
+
+try {
+	$navButtons = $block->fetchNavButtons();
+	$surveyData = $block->fetchSurveyData();
+
+	if (isset($surveyData['code']) && $surveyData['code'] == 'AUTH_401') {
+		throw new Exception('Unauthorized');
+	}
+
+	if (!$surveyData || empty($surveyData)) {
+		throw new Exception('Not found');
+	}
+	
+
+	$isLogged = $block->isCustomerLoggedIn();
+	if ($isLogged) {
+		$pseudo = $block->getPseudo();
+		$firstname = $block->getFirstname();
+	}
+
+} catch (Exception $e) {
+	if ($e->getMessage() === 'Unauthorized') {
+		$authfailed = 1;
+	} else if ($e->getMessage() === 'Not found') {
+		$notfound = 1;
+	} else {
+		$serverError = 1;
+	}
+}
+
+if ($serverError) {
+	echo $this->getLayout()->createBlock("Magento\Framework\View\Element\Template")->setTemplate("Contestio_Connect::error_500.phtml")->toHtml();
+	return;
+} elseif ($authfailed) {
+	echo $this->getLayout()->createBlock("Magento\Framework\View\Element\Template")->setTemplate("Contestio_Connect::error_401.phtml")->toHtml();
+	return;
+} elseif ($notfound) {
+	echo $this->getLayout()->createBlock("Magento\Framework\View\Element\Template")->setTemplate("Contestio_Connect::error_404.phtml")->toHtml();
+	return;
+}
+?>
+
+<div class="contestio-main-container">
+	<div class="contestio_overlay hidden">
+		<!-- Form to participate to a survey -->
+		<aside id="dialogSurvey" class="survey hidden">
+			<button aria-label="close" class="closeModalSurvey x">❌</button>
+
+			<h2>Sondage</h2>
+			
+			<form id="surveyForm" class="hidden"></form>
+
+			<div class="success hidden">
+				<p>
+					Votre participation a bien été enregistrée !
+				</p>
+			</div>
+
+			<p class="response"></p>
+
+			<!-- Default footer -->
+			<footer class="modal-footer">
+				<button class="success closeModalSurvey">
+					Fermer
+				</button>
+			</footer>
+
+			<!-- Footer at the end of survey to validate form -->
+			<footer class="modal-survey-end hidden">
+				<button class="prev">
+					Précédent
+				</button>
+
+				<button
+					id="validateSurvey"
+					class="success"
+				>
+					Valider
+				</button>
+			</footer>
+
+			<!-- Footer to go to the next question -->
+			<footer class="questions-footer hidden">
+				<button class="prev hidden">
+					Précédent
+				</button>
+
+				<button class="success next" disabled>
+					Suivant
+				</button>
+			</footer>
+		</aside>
+
+		<?php echo $this->getLayout()->createBlock("Magento\Framework\View\Element\Template")->setTemplate("Contestio_Connect::login_form.phtml")->toHtml() ?>
+	</div>
+
+	<!-- Navbar with custom buttons -->
+	<div class="contestio-header contestio-btn-section">
+		<p id="contestio-header-text">
+			<?php if ($pseudo): ?>
+				Bonjour <span><?= $pseudo ?></span> 👋
+			<?php endif; ?>
+		</p>
+
+		<ul>
+			<?php foreach ($navButtons as $button) : ?>
+				<!-- Print custom button styles -->
+				<style>
+					/* Default */
+					<?php if (isset($button['styles'])): ?>
+						a#<?= $button['slug'] ?> {
+							<?php echo $button['styles']; ?>
+						}
+					<?php endif; ?>
+
+					/* Hover */
+					<?php if (isset($button['hover'])): ?>
+						a#<?= $button['slug'] ?>:hover,
+						a#<?= $button['slug'] ?>.active {
+							<?php echo $button['hover']; ?>
+						}
+					<?php endif; ?>
+
+					/* Focus and active */
+					<?php if (isset($button['focus'])): ?>
+						a#<?= $button['slug'] ?>:focus,
+						a#<?= $button['slug'] ?>:active {
+							<?php echo $button['focus']; ?>
+						}
+					<?php endif; ?>
+				</style>
+
+				<?php
+					$url = $this->getUrl('contestio/accueil');
+					$isActive = strpos($currentPageUrl, $this->getUrl('contestio/accueil')) === 0;
+
+					// Détermine l'URL à utiliser
+					if ($button['navUrl'] === 'contest') {
+						$url = $this->getUrl('contestio/concours');
+						$isActive = strpos($currentPageUrl, $this->getUrl('contestio/concours')) === 0;
+					} elseif ($button['navUrl'] === 'survey') {
+						$url = $this->getUrl('contestio/sondage');
+						$isActive = strpos($currentPageUrl, $this->getUrl('contestio/sondage')) === 0;
+					}
+				?>
+
+				<a
+					id="<?= $button['slug'] ?>"
+					href="<?= $url ?>"
+					class="basic-button <?= $isActive ? 'active' : '' ?>"
+				>
+					<?= $button['text'] ?>
+				</a>
+			<?php endforeach; ?>
+		</ul>
+	</div>
+	<!-- / Navbar with custom buttons -->
+
+	<div class="contestio-main-content gap-top-35">
+		<?php foreach ($surveyData as $row): ?>
+
+			<!-- Print header banner -->
+			<?php if(isset($row['type']) && $row['type'] === 'banner'): ?>
+				<div class="contestio-section gap-44">
+					<div class="contestio-row contestio-align-items-center">
+						<div class="contestio-col-8">
+							<?php if(isset($row['name'])): ?>
+							<h2 class="contestio-heading"><?= $row['name'] ?></h2>
+							<?php endif; ?>
+							<div class="contestio-text-box">
+							<?php if(isset($row['description'])): ?>
+								<p><?= $row['description'] ?></p>
+							<?php endif;?>
+							</div>
+						</div>
+						<div class="contestio-col-4">
+							<div class="contestio-img-box">
+								<?php if(isset($row['presignedUrl'])): ?>
+									<img src="<?php echo $row['presignedUrl']; ?>" alt="" />
+								<?php endif; ?>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<hr class="contestio-hr">
+			<?php endif; ?>
+			<!-- / Print header banner -->
+
+			<!-- Survey preview -->
+			<?php if(isset($row['type']) && $row['type'] === 'survey'): ?>
+				<div class="contestio-section gap-44" orgId='<?= $row['orgId'] ?>'>
+					<div class="contestio-row contestio-align-items-center">
+						<div class="contestio-col-12">
+							<!-- Survey name -->
+							<?php if(isset($row['name'])): ?>
+								<h3 class="contestio-heading shamrock-green-heading">#<?= $row['name'] ?></h3>
+							<?php endif; ?>
+
+							<!-- Survey description -->
+							<div class="contestio-text-box">
+								<?php if(isset($row['description'])): ?>
+									<p><?= $row['description'] ?></p>
+								<?php endif; ?>
+							</div>
+
+							<div class="contestio-btn-section mt-1">
+								<?php
+									$button = isset($row['buttonParticipate']) ? $row['buttonParticipate'] : null;
+									$alreadyParticipated = isset($row['alreadyParticipated']) && $row['alreadyParticipated'];
+								?>
+								
+								<!-- Button to participate to contest -->
+								<div class="contestio-btn-section mt-1">
+									<!-- Print custom button -->
+									<?php if ($button !== null): ?>
+										<!-- Print custom button styles -->
+										<style>
+											/* Default */
+											<?php if (isset($button['styles'])): ?>
+												button#<?= $button['slug'] ?> {
+													<?php echo $button['styles']; ?>
+												}
+											<?php endif; ?>
+
+											/* Hover */
+											<?php if (isset($button['hover'])): ?>
+												button#<?= $button['slug'] ?>:hover {
+													<?php echo $button['hover']; ?>
+												}
+											<?php endif; ?>
+
+											/* Focus and active */
+											<?php if (isset($button['focus'])): ?>
+												button#<?= $button['slug'] ?>:focus,
+												button#<?= $button['slug'] ?>:active {
+													<?php echo $button['focus']; ?>
+												}
+											<?php endif; ?>
+										</style>
+
+										<button
+											id="<?= $button['slug'] ?>"
+											class="participButton basic-button"
+											surveyId='<?= $row['_id'] ?>'
+											<?php echo $alreadyParticipated ? 'disabled' : ''; ?>
+										>
+											<?= $alreadyParticipated ? 'Déjà participé' : $button['text']; ?>
+										</button>
+									<?php endif; ?>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			<?php endif; ?>
+			<!-- / Survey preview -->
+		<?php endforeach; ?>
+	</div>
+
+	<?php echo $this->getLayout()->createBlock("Magento\Framework\View\Element\Template")->setTemplate("Contestio_Connect::footer.phtml")->toHtml() ?>
+</div>
+
+<script>
+require(['jquery'], function($) {
+	// Set pseudo in navbar if logged in
+	<?php if($pseudo): ?>
+		$('#contestio-header-text').html('Bonjour <span><?= $pseudo ?></span> 👋');
+	<?php else: ?>
+		$('#contestio-header-text').html('');
+	<?php endif; ?>
+
+	// Function to render survey item
+	const renderItem = (item, i) => {
+		const { question, options } = item;
+
+		// Create question item
+		const questionItem = $('<div class="survey_item hidden"></div>');
+		questionItem.attr('data-number', item.number);
+		questionItem.attr('data-question-id', item._id);
+
+		// Remove hidden class for the first question
+		if (item.number === 1) {
+			questionItem.removeClass('hidden');
+		}
+
+		// Create question title
+		const questionTitle = $(`<h3>${question}</h3>`);
+		questionItem.append(questionTitle);
+
+		// Create answers
+		const answersContainer = $('<div class="survey_answers"></div>');
+
+		options.forEach((answer, index) => {
+			const answerItem = $(`
+				<div class="answer">
+					<input type="radio" id="${answer._id}" name="radio${i}" value="${answer.text}" data-answer-id="${answer._id}" />
+					<label for="${answer._id}">${answer.text}</label>
+				</div>
+			`);
+
+			answersContainer.append(answerItem);
+		});
+
+		questionItem.append(answersContainer);
+
+		return questionItem;
+	};
+
+	// Init scroll position
+	let lastScrollTop = 0;
+	let currQuestion = 1;
+
+	$('.closeModalSurvey').click(function(){
+    // Hide modal and overlay
+    $('#dialogSurvey').addClass('hidden');
+		$('.contestio_overlay').addClass('hidden');
+
+		// Remove class from main container
+		$('.contestio-main-container').removeClass('contestio_overlay_open');
+
+		// Scroll to the last scroll position
+    $(window).scrollTop(lastScrollTop);
+
+		// Check if modal has class reload
+		if ($('#dialogSurvey').hasClass('reload')) {
+			location.reload();
+		}
+  });
+	
+	// ! Open survey modal
+	$(".participButton").on('click',function(e){
+		e.preventDefault();
+
+		// Update scroll position
+		lastScrollTop = $(window).scrollTop();
+
+		// Show modal and overlay
+		$('.contestio_overlay').removeClass('hidden');
+
+		// Remove class from main container
+		$('.contestio-main-container').addClass('contestio_overlay_open');
+
+		// If user is not logged in, show login form
+		<?php if(!$isLogged): ?>
+			$('#dialogLogin').removeClass('hidden');
+			return false;
+		<?php endif; ?>
+
+		// If user is logged but no pseudo, show the pseudo form
+		<?php if(!$pseudo): ?>
+			// Show pseudo form
+			$('#dialogPseudo').find('.firstName').html('<?= $firstname ?>');
+			$('#dialogPseudo').removeClass('hidden');
+			return false;
+		<?php endif; ?>
+
+		// Reset modal
+		$('#dialogSurvey .response').html('');
+		$('#dialogSurvey #surveyForm').html('');
+		$('#dialogSurvey footer').addClass('hidden');
+		$('#dialogSurvey footer.modal-footer').removeClass('hidden');
+
+		// Hide success page
+		$('#dialogSurvey').removeClass('survey-end');
+		$('#dialogSurvey div.success').addClass('hidden');
+
+		// Hide form
+		$('#dialogSurvey #surveyForm').addClass('hidden');
+
+		currQuestion = 1;
+
+		const surveyId = $(this).attr('surveyid');
+
+		// Else, show the participation form
+		$('#dialogSurvey').removeClass('hidden');
+
+		$('body').trigger('processStart');
+
+		// Get survey data
+		$.ajax({
+			type: "POST",
+			url: "<?php echo $block->getUrl('contestio/ajax/survey') ?>",
+			data: {
+				surveyId
+			},
+			dataType: "json",
+			success: function(data) {
+				$('body').trigger('processStop');
+
+				if (data && data.success) {
+					const datas = data.data;
+
+					// Update survey infos
+					$('#dialogSurvey h2').text(datas.name);
+
+					if (datas.alreadyParticipated) {
+						// Show success page
+						$('#dialogSurvey').addClass('survey-end');
+						$('#dialogSurvey div.success').removeClass('hidden');
+						return;
+					}
+					
+					$('#dialogSurvey #validateSurvey').attr('surveyId', surveyId);
+
+					// Hide all footers
+					$('#dialogSurvey footer').addClass('hidden');
+
+					// Show footer.questions-footer
+					$('#dialogSurvey footer.questions-footer').removeClass('hidden');
+
+					// Show form
+					$('#dialogSurvey #surveyForm').removeClass('hidden');
+
+					// Create survey items
+					datas.questions.forEach((question, index) => {
+						const item = renderItem({
+							number: index + 1,
+							_id: question._id,
+							question: question.text,
+							options: question.options
+						}, index);
+
+						$('#dialogSurvey #surveyForm').append(item);
+					});
+				} else {
+					$('#dialogSurvey .response').html('<p class="error">Nous rencontrons un problème. Veuillez réessayer plus tard.</p>');
+				}
+			}
+		});
+	});
+
+	// Handle next question
+	$('#dialogSurvey .next').click(function(e) {
+		e.preventDefault();
+
+		// Get current question
+		const currentQuestion = $('#dialogSurvey .survey_item[data-number="' + currQuestion + '"]');
+
+		// Get next question
+		const nextQuestion = $('#dialogSurvey .survey_item[data-number="' + (currQuestion + 1) + '"]');
+
+		// Show prev button
+		$('#dialogSurvey .prev').removeClass('hidden');
+
+		// If next question exists
+		if (nextQuestion.length) {
+			// Hide current question
+			currentQuestion.addClass('hidden');
+
+			// Show next question
+			nextQuestion.removeClass('hidden');
+
+			// Update current question
+			currQuestion += 1;
+
+			// Check if there is an answer already checked
+			const alreadyChecked = nextQuestion.find('input:checked');
+
+			if (alreadyChecked.length) {
+				// Enable next button
+				$('#dialogSurvey .next').prop('disabled', false);
+			} else {
+				// Disable next button
+				$('#dialogSurvey .next').prop('disabled', true);
+			}
+
+			// If next question is the last one
+			if (currQuestion === $('#dialogSurvey .survey_item').length) {
+				// Hide questions-footer
+				$('#dialogSurvey footer.questions-footer').addClass('hidden');
+
+				// Show modal-survey-end
+				$('#dialogSurvey footer.modal-survey-end').removeClass('hidden');
+			}
+		}
+	});
+
+	// Handle previous question
+	$('#dialogSurvey .prev').click(function(e) {
+		e.preventDefault();
+
+		// Get current question
+		const currentQuestion = $('#dialogSurvey .survey_item[data-number="' + currQuestion + '"]');
+
+		// Get previous question
+		const prevQuestion = $('#dialogSurvey .survey_item[data-number="' + (currQuestion - 1) + '"]');
+
+		// If previous question exists
+		if (prevQuestion.length) {
+			// Hide current question
+			currentQuestion.addClass('hidden');
+
+			// Show previous question
+			prevQuestion.removeClass('hidden');
+
+			// Update current question
+			currQuestion -= 1;
+
+			// Check if there is an answer already checked
+			const alreadyChecked = prevQuestion.find('input:checked');
+
+			if (alreadyChecked.length) {
+				// Enable next button
+				$('#dialogSurvey .next').prop('disabled', false);
+			} else {
+				// Disable next button
+				$('#dialogSurvey .next').prop('disabled', true);
+			}
+
+			// If previous question is the first one
+			if (currQuestion === 1) {
+				// Hide prev button
+				$('#dialogSurvey .prev').addClass('hidden');
+			}
+
+			// Show questions-footer
+			$('#dialogSurvey footer.questions-footer').removeClass('hidden');
+
+			// Hide modal-survey-end
+			$('#dialogSurvey footer.modal-survey-end').addClass('hidden');
+		}
+	});
+
+	$(document).on('change', '.answer input[type="radio"]', function(e) {
+		e.preventDefault();
+
+		// Get all answers
+		const answers = $('#dialogSurvey .survey_item input:checked');
+
+		// If no answer
+		if (!answers.length) {
+			$('#dialogSurvey .response').html('<p class="error">Veuillez répondre à la question.</p>');
+
+			// Disable next button
+			$('#dialogSurvey .next').prop('disabled', true);
+			return;
+		}
+
+		// Enable next button
+		$('#dialogSurvey .next').prop('disabled', false);
+	});
+
+	// Handle validate survey
+	$(document).on('click', '#validateSurvey', function(e) {
+		e.preventDefault();
+
+		// Get all answers
+		const answers = $('#dialogSurvey .survey_item input:checked');
+
+		// Get all questions
+		const questions = $('#dialogSurvey .survey_item');
+
+		// If no answer
+		if (!answers.length) {
+			$('#dialogSurvey .response').html('<p class="error">Veuillez répondre à la question.</p>');
+			return;
+		}
+
+		// Get survey id
+		const surveyId = $(this).attr('surveyId');
+
+		// Get all answers values
+		const values = [];
+		questions.each((index, question) => {
+			const questionId = $(question).attr('data-question-id');
+			const answer = $(question).find('input:checked');
+
+			values.push({
+				questionId,
+				answerId: answer.attr('data-answer-id'),
+				answer: answer.val()
+			});
+		});
+
+		// Send answers
+		$('body').trigger('processStart');
+		$.ajax({
+			type: "POST",
+			url: "<?php echo $block->getUrl('contestio/ajax/submitsurvey') ?>",
+			data: {
+				surveyId,
+				answers: values
+			},
+			dataType: "json",
+			success: function(data) {
+				$('body').trigger('processStop');
+
+				// Hide form
+				$('#dialogSurvey #surveyForm').addClass('hidden');
+
+				// Hide all footers
+				$('#dialogSurvey footer').addClass('hidden');
+				
+				// Show footer.modal-footer
+				$('#dialogSurvey footer.modal-footer').removeClass('hidden');
+
+				// Add class reload to close button
+				$('#dialogSurvey').addClass('reload');
+
+				if (data && data.success) {
+					// Show success page
+					$('#dialogSurvey').addClass('survey-end');
+					$('#dialogSurvey div.success').removeClass('hidden');
+				} else {
+					if (data.message) {
+						$('#dialogSurvey .response').html(`<p class="error">${data.message}</p>`);
+					} else {
+						$('#dialogSurvey .response').html('<p class="error">Nous rencontrons un problème. Veuillez réessayer plus tard.</p>');
+					}
+				}
+			}
+		});
+	});
+});
+</script>

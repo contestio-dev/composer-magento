@@ -1,0 +1,25 @@
+<div class="contestio-main-container error-page">
+  <img
+    src="<?php echo $block->getViewFileUrl('Contestio_Connect::images/error500.svg'); ?>"
+    alt="Internal server error"
+    height="300"
+    width="300"
+  />
+
+  <h3>
+    Erreur du serveur
+  </h3>
+
+  <p>
+    Le problème vient de notre côté. Veuillez réessayer plus tard.
+  </p>
+
+  <a
+    href="https://contestio.fr/report-bug/?url=<?php echo $this->getUrl('*/*/*', ['_current' => true, '_use_rewrite' => true]); ?>&code=AUTH_500"
+    target="_blank"
+  >
+    Signaler l'erreur
+  </a>
+
+  <?php echo $this->getLayout()->createBlock("Magento\Framework\View\Element\Template")->setTemplate("Contestio_Connect::footer.phtml")->toHtml() ?>
+</div>

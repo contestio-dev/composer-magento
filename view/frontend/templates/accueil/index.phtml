@@ -1,0 +1,251 @@
+<?php
+// Get the URL of the current page
+$currentPageUrl = $this->getUrl('*/*/*', ['_current' => true, '_use_rewrite' => true]);
+// Remove last index/ at the end
+$currentPageUrl = str_replace('/index/', '/', $currentPageUrl);
+
+// Init variables
+$authfailed = 0;
+$notfound = 0;
+$serverError = 0;
+$homeConfigData = [];
+$navButtons = [];
+
+$isLogged = false;
+$pseudo = null;
+$firstname = null;
+$isFirstCustomBlock = true;
+
+try {
+	$navButtons = $block->fetchNavButtons();
+	$homeConfigData = $block->fetchHomeConfigData();
+
+	if (isset($homeConfigData['code']) && $homeConfigData['code'] == 'AUTH_401') {
+		throw new Exception('Unauthorized');
+	}
+
+	if (!$homeConfigData || !isset($homeConfigData['pageSections']) || empty($homeConfigData['pageSections'])) {
+		throw new Exception('Not found');
+	}
+
+	$isLogged = $block->isCustomerLoggedIn();
+	if ($isLogged) {
+		$pseudo = $block->getPseudo();
+		$firstname = $block->getFirstname();
+	}
+
+} catch (Exception $e) {
+	if ($e->getMessage() === 'Unauthorized') {
+		$authfailed = 1;
+	} else if ($e->getMessage() === 'Not found') {
+		$notfound = 1;
+	} else {
+		$serverError = 1;
+	}
+}
+
+if ($serverError) {
+	echo $this->getLayout()->createBlock("Magento\Framework\View\Element\Template")->setTemplate("Contestio_Connect::error_500.phtml")->toHtml();
+	return;
+} elseif ($authfailed) {
+	echo $this->getLayout()->createBlock("Magento\Framework\View\Element\Template")->setTemplate("Contestio_Connect::error_401.phtml")->toHtml();
+	return;
+} elseif ($notfound) {
+	echo $this->getLayout()->createBlock("Magento\Framework\View\Element\Template")->setTemplate("Contestio_Connect::error_404.phtml")->toHtml();
+	return;
+}
+?>
+
+<div class="contestio-main-container">
+	<div class="contestio_overlay hidden">
+		<?php echo $this->getLayout()->createBlock("Magento\Framework\View\Element\Template")->setTemplate("Contestio_Connect::login_form.phtml")->toHtml() ?>
+	</div>
+
+	<!-- Navbar with custom buttons -->
+	<div class="contestio-header contestio-btn-section">
+		<p id="contestio-header-text">
+			<?php if ($pseudo): ?>
+				Bonjour <span><?= $pseudo ?></span> 👋
+			<?php endif; ?>
+		</p>
+
+		<ul>
+			<?php foreach ($navButtons as $button) : ?>
+				<!-- Print custom button styles -->
+				<style>
+					/* Default */
+					<?php if (isset($button['styles'])): ?>
+						a#<?= $button['slug'] ?> {
+							<?php echo $button['styles']; ?>
+						}
+					<?php endif; ?>
+
+					/* Hover */
+					<?php if (isset($button['hover'])): ?>
+						a#<?= $button['slug'] ?>:hover,
+						a#<?= $button['slug'] ?>.active {
+							<?php echo $button['hover']; ?>
+						}
+					<?php endif; ?>
+
+					/* Focus and active */
+					<?php if (isset($button['focus'])): ?>
+						a#<?= $button['slug'] ?>:focus,
+						a#<?= $button['slug'] ?>:active {
+							<?php echo $button['focus']; ?>
+						}
+					<?php endif; ?>
+				</style>
+
+				<?php
+					$url = $this->getUrl('contestio/accueil');
+					$isActive = strpos($currentPageUrl, $this->getUrl('contestio/accueil')) === 0;
+
+					// Détermine l'URL à utiliser
+					if ($button['navUrl'] === 'contest') {
+						$url = $this->getUrl('contestio/concours');
+						$isActive = strpos($currentPageUrl, $this->getUrl('contestio/concours')) === 0;
+					} elseif ($button['navUrl'] === 'survey') {
+						$url = $this->getUrl('contestio/sondage');
+						$isActive = strpos($currentPageUrl, $this->getUrl('contestio/sondage')) === 0;
+					}
+				?>
+
+				<a
+					id="<?= $button['slug'] ?>"
+					href="<?= $url ?>"
+					class="basic-button <?= $isActive ? 'active' : '' ?>"
+				>
+					<?= $button['text'] ?>
+				</a>
+			<?php endforeach; ?>
+		</ul>
+	</div>
+	<!-- / Navbar with custom buttons -->
+
+	<div class="contestio-main-content gap-top-35">
+		<?php foreach ($homeConfigData['pageSections'] as $row) : ?>
+			<?php if ($row['elementType'] !== 'other'): ?>
+				<?php $button = isset($row['button']) ? $row['button'] : null; ?>
+
+				<div class="contestio-section gap-44">
+					<div class="contestio-row contestio-align-items-center">
+						<div class="contestio-col-8">
+							<!-- Print title if exists -->
+							<div class="contestio-text-box">
+								<p>
+									<?php if (isset($row['description'])): ?>
+										<?= $row['description'] ?>
+									<?php endif; ?>
+								</p>
+							</div>
+
+							<!-- Print custom button -->
+							<?php if ($button !== null && $button['isActive'] === true): ?>
+
+								<!-- Print custom button styles -->
+								<style>
+									/* Default */
+									<?php if (isset($button['styles'])): ?>
+										a#<?= $button['slug'] ?> {
+											<?php echo $button['styles']; ?>
+										}
+									<?php endif; ?>
+
+									/* Hover */
+									<?php if (isset($button['hover'])): ?>
+										a#<?= $button['slug'] ?>:hover {
+											<?php echo $button['hover']; ?>
+										}
+									<?php endif; ?>
+
+									/* Focus and active */
+									<?php if (isset($button['focus'])): ?>
+										a#<?= $button['slug'] ?>:focus,
+										a#<?= $button['slug'] ?>:active {
+											<?php echo $button['focus']; ?>
+										}
+									<?php endif; ?>
+								</style>
+
+								<div class="contestio-btn-section">
+									<!-- Redirect to contest or survey page -->
+									<a
+										id="<?= $button['slug'] ?>"
+										href="<?php echo $row['elementType'] === 'contest' ? $this->getUrl('contestio/concours') : $this->getUrl('contestio/sondage') ?>"
+										class="basic-button"
+									>
+										<?= $button['text'] ?>
+									</a>
+								</div>
+							<?php endif; ?>
+						</div>
+
+						<!-- Print image if exists -->
+						<div class="contestio-col-4">
+							<div class="contestio-img-box">
+								<?php if (isset($row['presignedUrl'])): ?>
+									<img src="<?php echo $row['presignedUrl']; ?>" alt="Illustration" />
+								<?php endif; ?>
+							</div>
+						</div>
+					</div>
+				</div>
+
+			<?php else: ?>
+
+				<!-- Print <hr> border above the first section -->
+				<?php if($isFirstCustomBlock === true) : ?>
+					<div class="full-heading-section gap-bottom-35 gap-top-44">
+						<h2 class="contestio-heading"><?= __('Dernières actualités') ?></h2>
+					</div>
+
+					<?php $isFirstCustomBlock = false; ?>
+				<?php endif; ?>
+
+				<div class="contestio-section gap-bottom-35">
+					<div class="contestio-row contestio-align-items-center">
+						<div class="contestio-col-8">
+							<div class="contestio-text-box">
+								<p>
+									<?php if(isset ($row['description'])): ?>
+										<?= $row['description'] ?>
+									<?php endif; ?>
+								</p>
+							</div>
+						</div>
+
+						<div class="contestio-col-4">
+							<div class="contestio-img-box">
+								<?php if(isset($row['presignedUrl'])): ?>
+									<img src="<?php echo $row['presignedUrl']; ?>" alt="Illustration" />
+								<?php endif; ?>
+							</div>
+						</div>
+					</div>
+				</div>
+			<?php endif; ?>
+			
+			<!-- Print <hr> border under the first section -->
+			<?php if($row['elementType'] === 'primary'): ?>
+				<hr class="contestio-hr" />
+			<?php endif; ?>
+		<?php endforeach; ?>
+  </div>
+
+	<?php echo $this->getLayout()->createBlock("Magento\Framework\View\Element\Template")->setTemplate("Contestio_Connect::footer.phtml")->toHtml() ?>
+</div>
+
+<script>
+require(['jquery'], function($){
+	$(document).ready(function() {
+		// Show pseudo dialog if user logged but no pseudo (only in home page)
+		<?php if($firstname && !$pseudo): ?>
+			$('.contestio-main-container').addClass('contestio_overlay_open');
+			$('#dialogPseudo').find('.firstName').html('<?= $firstname ?>');
+			$('#dialogPseudo').removeClass('hidden');
+			$('.contestio_overlay').removeClass('hidden');
+		<?php endif; ?>
+	});
+});
+</script>

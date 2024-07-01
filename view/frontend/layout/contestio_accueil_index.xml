@@ -1,0 +1,11 @@
+<?xml version="1.0" ?>
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" layout="1column" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+ <head>
+		<css src="Contestio_Connect::css/contestio.css"/>
+	</head>
+	<body>
+		<referenceContainer name="content">
+			<block name="accueil.index" class="Contestio\Connect\Block\Accueil\Index" template="Contestio_Connect::accueil/index.phtml"/>
+		</referenceContainer>
+	</body>
+</page>

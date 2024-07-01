@@ -1,0 +1,342 @@
+<aside id="dialogLogin" class="withForm hidden">
+  <button aria-label="close" class="closeModalLogin x">❌</button>
+
+  <h2>Connexion</h2>
+
+  <form
+    method="post"
+    id="login-form"
+    data-mage-init='{"validation":{}}'
+  >
+    <?= $block->getBlockHtml('formkey') ?>
+    <div class="field email required">
+      <div class="control">
+        <label for="email" class="label">
+          <span><?= $block->escapeHtmlAttr(__('Email')) ?></span>
+        </label>
+
+        <input
+          id="email"
+          type="email"
+          name="username"
+          class="input-text"
+          placeholder="<?= $block->escapeHtml(__('Votre adresse email')) ?>"
+          title="<?= $block->escapeHtmlAttr(__('Email')) ?>"
+          data-mage-init='{"mage/trim-input":{}}'
+          data-validate="{required:true, 'validate-email':true}"
+        >
+      </div>
+    </div>
+
+    <div class="field password required">
+      <div class="forgetPassword">
+        <label for="pass" class="label">
+          <span><?= $block->escapeHtmlAttr(__('Mot de passe')) ?></span>
+        </label>
+
+        <a class="action remind" href="<?php echo $block->getUrl('customer/account/forgotpassword') ?>">
+          <span>
+            <?= $block->escapeHtml(__('Mot de passe oublié')) ?>
+          </span>
+        </a>
+      </div>
+
+      <div class="control">
+        <input
+          name="password"
+          type="password"
+          placeholder="<?= $block->escapeHtml(__('Votre mot de passe')) ?>"
+          class="input-text" id="pass"
+          title="<?= $block->escapeHtmlAttr(__('Password')) ?>"
+          data-validate="{required:true}"
+        >
+      </div>
+    </div>
+
+    <p class="error-msg"></p>
+    
+    <button type="submit" class="action login primary" name="send" id="send2">
+      <span>
+        <?= $block->escapeHtml(__('Se connecter')) ?>
+      </span>
+    </button>
+  </form>
+  
+  <p class="light">
+    Je n'ai pas de compte ? <a href="#" id="custom-register">Créer un compte</a>
+  </p>
+</aside>
+
+<aside id="dialogPseudo" class="withForm hidden">
+  <button aria-label="close" class="closeModalPseudo x">❌</button>
+
+  <h2>Hey, <span class="firstName"></span> 👋</h2>
+
+  <p>
+    Avant de continuer, pourriez-vous nous donner votre pseudo ?
+  </p>
+
+  <form
+    method="post"
+    id="pseudo-form"
+    data-mage-init='{"validation":{}}'
+  >
+    <?= $block->getBlockHtml('formkey') ?>
+
+    <div class="field required">
+      <div class="control">
+        <input
+          id="pseudo"
+          type="text"
+          name="pseudo"
+          class="input-text"
+          maxlength="12"
+          placeholder="<?= $block->escapeHtml(__('Votre pseudo')) ?>"
+          title="<?= $block->escapeHtmlAttr(__('Pseudo')) ?>"
+          data-mage-init='{"mage/trim-input":{}}'
+          data-validate="{required:true, 'validate-length':{min:1}}"
+        >
+      </div>
+    </div>
+
+    <p class="error-msg"></p>
+    
+    <button type="submit">
+      <span>
+        <?= $block->escapeHtml(__('Valider')) ?>
+      </span>
+    </button>
+
+    <p class="light">
+      Il sera utilisé pour vous identifier lors de vos participations aux concours et sondages.
+    </p>
+  </form>
+</aside>
+
+<!-- Report a participation -->
+<aside id="dialogFlag" class="increaseZ hidden">
+  <button aria-label="close" class="closeModalFlag x">❌</button>
+  <h2>Signalement</h2>
+  
+  <p>
+    Vous êtes sur le point de signaler la publication de <span class="user"></span>.
+    <br><br>
+    Sélectionnez la raison de votre signalement :
+  </p>
+
+  <form id="flagForm">
+    <input type="hidden" class="contestId" name="contestId" value="">
+    <input type="hidden" class="participationId" name="participationId" value="">
+
+    <select name="flagReason" id="flagReason">
+      <option value="Contenu inapproprié">Contenu inapproprié</option>
+      <option value="Discours haineux">Discours haineux</option>
+      <option value="Harcèlement">Harcèlement</option>
+      <option value="Publicité ou spam">Publicité ou spam</option>
+      <option value="Usurpation">Usurpation</option>
+      <option value="other">Autre(s)</option>
+    </select>
+
+    <div id="flagReasonOtherDiv" class="hidden">
+      <label>Autre(s)</label>
+      <textarea name="flagReasonOther" id="flagReasonOther" placeholder="Raison(s) supplémentaire(s)" maxlength="200"></textarea>
+    </div>
+  </form>
+
+  <p class="error-msg"></p>
+
+  <footer>
+    <button class="cancel closeModalFlag">
+      Fermer
+    </button>
+
+    <button
+      id="flagButton"
+      class="confirm"
+    >
+      Signaler
+    </button>
+  </footer>
+</aside>
+
+<script type="text/javascript">
+  require(['jquery'], function($) {
+    // ! LOGIN MODAL dialog functions
+
+    const loginButton = $('#login-form').find('button[type=submit]');
+    const loginUrl = "<?php echo $block->getUrl('contestio/ajax/login') ?>";
+
+		// Close Modal for pseudo
+		$('.closeModalLogin').click(function(){
+			// Hide modal and overlay
+			$('#dialogLogin').addClass('hidden');
+			$('.contestio_overlay').addClass('hidden');
+
+			// Remove class from main container
+			$('.contestio-main-container').removeClass('contestio_overlay_open');
+
+      // Scroll to #dialogLogin[data-scrollto] if it exists
+      if ($('#dialogLogin').attr('data-scrollto')) {
+        // scroll without animation
+        window.scrollTo(0, $('#dialogLogin').attr('data-scrollto'));
+      }
+		});
+
+    // Texts
+    const loginText = "<?php echo __('Se connecter') ?>";
+    const loggingText = "<?php echo __('Veuillez patienter...') ?>";
+
+    const registerText = "<?php echo __('S\'inscrire') ?>";
+    const registeringText = loggingText;
+
+    $('#login-form').submit(function(){
+      loginButton.text(loggingText);
+      loginButton.attr("disabled", "disabled");
+
+      const formData = getFormData($(this));
+
+      $.ajax({
+        type: "POST",
+        url: loginUrl,
+        data: formData,
+        dataType: "json",
+        success: function(data) {
+          showResponse(data);
+          if(data.errors) {
+            loginButton.text(loginText);
+            loginButton.removeAttr('disabled');
+
+            // Show error message
+            $('.error-msg').text(data.message);
+          } else {
+            // Reload the page
+            location.reload();
+          }
+        }
+      });
+      return false;
+    });
+
+    function getFormData(formElem){
+        var unindexed_array = formElem.serializeArray();
+        var indexed_array = {};
+
+        jQuery.map(unindexed_array, function(n, i){
+            indexed_array[n['name']] = n['value'];
+        });
+
+        return indexed_array;
+    }
+
+    function showResponse(data) {
+      if(data.errors) {
+        $('.response-msg').html("<div class='error'>"+data.message+"</div>");
+      } else {
+        $('.response-msg').html("<div class='success'>"+data.message+"</div>");
+      }
+    }
+    
+    // Set cookie to remember user clicked on register button
+    $('#custom-register').click(function(e) {
+      var expirationDate = new Date();
+      expirationDate.setFullYear(expirationDate.getFullYear() + 2);
+      document.cookie = "contestioclub=true; expires=" + expirationDate.toUTCString() + "; path=/";
+      var regUrl = "<?php echo $block->getUrl('customer/account/create') ?>";
+      window.location.href = regUrl;
+    });
+
+    // ! PSEUDO MODAL dialog functions
+
+    // Regex for pseudo : 2-12 characters, letters and numbers only and - and _
+		const pseudoRegex = /^[a-zA-Z0-9_-]{2,12}$/;
+
+    // Clear error message on input change
+    $('#pseudo').on('input', function(){
+      $('.error-msg').text('');
+    });
+
+    // Handle pseudo form
+    $('#pseudo-form').submit(function(e){
+      e.preventDefault();
+      const pseudo = $('#pseudo').val();
+
+      // Validate pseudo
+      if (!pseudo || pseudo === "") {
+        $('.error-msg').text("<?= __('Veuillez entrer un pseudo') ?>");
+        return;
+      } else if(!pseudoRegex.test(pseudo)) {
+        $('.error-msg').text("<?= __('Le pseudo doit contenir entre 2 et 12 caractères, lettres et chiffres uniquement et - et _') ?>");
+        return;
+        // Check if pseudo contains at least 1 letter
+      } else if (!/[a-zA-Z]/.test(pseudo)) {
+        $('.error-msg').text("<?= __('Le pseudo doit contenir au moins une lettre') ?>");
+        return;
+      }
+
+      // Texts
+      const defaultText = "<?php echo __('Valider') ?>";
+      const loadingText = "<?php echo __('Veuillez patienter...') ?>";
+
+      const loginButton = $(this).find('button[type=submit]');
+
+      loginButton.text(loadingText);
+      loginButton.attr("disabled", "disabled");
+
+      try {
+        const socialshareUrl = "<?php echo $block->getUrl('contestio/ajax/finaluser') ?>";
+      
+        $.ajax({
+          url: socialshareUrl,
+          type: 'POST',
+          data: JSON.stringify({ handle: pseudo }),
+          contentType: 'application/json',
+          success: function(data) {
+            if(data.success === false) {
+              loginButton.text(defaultText);
+              loginButton.removeAttr('disabled');
+
+              // Show error message
+              $('.error-msg').text(data.response.message);
+            } else {
+              // Disable .dialogPseudo button
+              $('#dialogPseudo .closeModalPseudo').attr('disabled', 'disabled');
+
+              loginButton.text('Pseudo validé !');
+
+              // Update p.light text
+              $('#dialogPseudo .light').text('Merci ! Vous pouvez maintenant continuer. Si vous n\'êtes pas redirigé automatiquement, vous pouvez recharger la page.');
+
+              // Reload the page after 1s
+              setTimeout(function(){
+                location.reload();
+              }, 1000);
+            }
+          },
+          error: function(error) {
+            console.error(error);
+
+            loginButton.text(defaultText);
+            loginButton.removeAttr('disabled');
+          }
+        });
+      } catch (error) {
+        console.error(error);
+
+        loginButton.text(defaultText);
+        loginButton.removeAttr('disabled');
+      }
+    });
+
+    // ? MODAL dialog functions
+
+    // Close Modal for pseudo
+    $('.closeModalPseudo').click(function(){
+      // Hide modal and overlay
+      $('#dialogPseudo').addClass('hidden');
+      $('.contestio_overlay').addClass('hidden');
+
+      // Remove class from main container
+      $('.contestio-main-container').removeClass('contestio_overlay_open');
+    });
+  });
+</script>

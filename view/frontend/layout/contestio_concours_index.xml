@@ -1,0 +1,14 @@
+<?xml version="1.0" ?>
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" layout="1column" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+ 	<head>
+		<css src="Contestio_Connect::css/contestio.css"/>
+	</head>
+	<body>
+		<referenceBlock name="head.additional">
+			<block name="concours.head" class="Contestio\Connect\Block\Concours\Index" template="Contestio_Connect::concours/head.phtml"/>
+		</referenceBlock>
+		<referenceContainer name="content">
+			<block name="concours.index" class="Contestio\Connect\Block\Concours\Index" template="Contestio_Connect::concours/index.phtml"/>
+		</referenceContainer>
+	</body>
+</page>

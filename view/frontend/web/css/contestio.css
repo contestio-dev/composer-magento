@@ -1,0 +1,1939 @@
+:root {
+  --contestio-primary: #00B482;
+  --contestio-secondary: #067455;
+  --contestio-white: #FFFFFF;
+  --contestio-black: #000000;
+  --contestio-success: #00B482;
+  --contestio-danger: #EF3826;
+  --contestio-info: #2d6cec;
+  --contestio-grey-100: #D3D7DE;
+  --contestio-grey-200: #BCBEC2;
+  --contestio-grey-300: #808388;
+  --contestio-grey-400: #333333;
+}
+.contestio-row [class*="contestio-col-"] {
+  box-sizing: border-box;
+  min-height: 1px;
+  position: relative;
+  width: 100%;
+  padding-left: 15px;
+  padding-right: 15px;
+}
+@media (max-width: 767px) {
+  .contestio-row [class*="contestio-col-"] {
+    padding-left: 10px;
+    padding-right: 10px;
+    max-width: 100%;
+  }
+}
+.contestio-row {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex-wrap: wrap;
+  flex-wrap: wrap;
+  margin-left: -15px;
+  margin-right: -15px;
+}
+@media (max-width: 767px) {
+  .contestio-row {
+    flex-direction: column;
+  }
+}
+.contestio-justify-content-end {
+  -webkit-box-pack: end;
+  -ms-flex-pack: end;
+  justify-content: flex-end;
+}
+.contestio-justify-content-center {
+  -webkit-box-pack: center;
+  -ms-flex-pack: center;
+  justify-content: center;
+}
+.contestio-align-items-center {
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+}
+.contestio-heading {
+  font-size: 24px;
+  font-weight: bold;
+  color: var(--contestio-black);
+  margin: 0px 0px 15px 0px;
+  line-height: 1.5;
+}
+.contestio-heading.heading-center {
+  text-align: center;
+}
+.contestio-heading > span {
+  color: var(--contestio-primary);
+}
+.contestio-text-box {
+  color: var(--contestio-black);
+  font-size: 15px;
+  font-weight: normal;
+  margin-right: 4rem;
+}
+.contestio-text-box * {
+  margin: 0;
+}
+@media (max-width: 769px) {
+  .contestio-text-box {
+    margin-right: 0;
+  }
+}
+.contestio-img-box img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+@media (max-width: 769px) {
+  .contestio-img-box img {
+    width: 80%;
+    margin: 0 auto;
+  }
+}
+.contestio-section {
+  position: relative;
+  width: 100%;
+}
+.gap-44 {
+  padding-top: 44px;
+  padding-bottom: 44px;
+}
+.gap-bottom-none {
+  padding-bottom: 0;
+}
+.gap-top-35 {
+  padding-top: 35px;
+}
+.gap-top-44 {
+  padding-top: 44px;
+}
+.gap-bottom-35 {
+  padding-bottom: 35px;
+}
+.gap-bottom-20 {
+  padding-bottom: 20px;
+}
+.gap-top-20 {
+  padding-bottom: 20px;
+}
+.hidden {
+  display: none !important;
+}
+.contestio-hr {
+  max-width: 804px;
+  margin: 0 auto;
+  display: block;
+  clear: both;
+  border: none;
+  height: 1px;
+  background: var(--contestio-grey-100);
+}
+.full-heading-section .contestio-heading {
+  margin-bottom: 0;
+}
+.competition-items-section .contestio-row [class*="contestio-col-"] {
+  padding-top: 15px;
+  padding-bottom: 15px;
+}
+.contestio-main-container {
+  position: relative;
+  background: var(--contestio-white);
+  width: 100%;
+  padding: 40px;
+  border: solid 1px var(--contestio-grey-100);
+  border-radius: 10px;
+  box-sizing: border-box;
+}
+.contestio-main-container.contestio_overlay_open {
+  min-height: 400px;
+  height: 70vh;
+  max-height: 800px;
+  overflow: hidden;
+}
+.contestio-main-container.error-page {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  background-color: #f8f9fa;
+}
+.contestio-main-container.error-page img {
+  margin: 0 20px;
+  width: 100%;
+  max-width: 300px;
+}
+.contestio-main-container.error-page h3 {
+  font-size: 2.5rem;
+  color: #000;
+  margin: 0 0 1rem 0;
+  text-align: center;
+}
+.contestio-main-container.error-page p {
+  font-size: 1.5rem;
+  color: #000;
+  margin: 0;
+  text-align: center;
+}
+.contestio-main-container.error-page a {
+  text-align: center;
+  margin-top: 20px;
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+.contestio-main-container .contestio-main-content {
+  width: 100%;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+.contestio-main-container .contestio-main-content:after,
+.contestio-main-container .contestio-main-content:before {
+  content: "";
+  display: table;
+}
+.contestio-main-container .contestio-main-content:after {
+  clear: both;
+}
+@media (max-width: 1023px) and (min-width: 768px) {
+  .contestio-main-container {
+    padding: 20px;
+  }
+}
+@media (max-width: 767px) {
+  .contestio-main-container {
+    padding: 15px;
+  }
+}
+.contestio-header {
+  width: 100%;
+  max-width: 1000px;
+  margin: 2rem auto 0 auto;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+}
+.contestio-header #contestio-header-text {
+  font-size: 1.5rem;
+  width: fit-content;
+  color: var(--contestio-black);
+  margin: 0;
+  display: flex;
+  flex-direction: row;
+}
+.contestio-header #contestio-header-text span {
+  font-weight: bold;
+  margin: 0 0.5rem;
+}
+.contestio-header ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 20px;
+}
+.contestio-header ul li {
+  margin: 0;
+  text-transform: uppercase;
+  font-weight: bold;
+  font-size: 15px;
+  min-width: 162px;
+}
+.contestio-header ul li a {
+  text-decoration: none;
+  display: block;
+  color: var(--contestio-black);
+  width: 100%;
+  border: solid 1px var(--contestio-black);
+  border-radius: 8px;
+  line-height: 1;
+  padding: 10px;
+  box-sizing: border-box;
+  text-align: center;
+  color: var(--contestio-primary);
+}
+.contestio-header ul li a:hover,
+.contestio-header ul li a:active,
+.contestio-header ul li a:focus {
+  border-color: var(--contestio-primary);
+  color: var(--contestio-primary);
+}
+.contestio-header ul li.active a,
+.contestio-header ul li:hover a {
+  border-color: var(--contestio-primary);
+  color: var(--contestio-primary);
+}
+@media (max-width: 767px) {
+  .contestio-header {
+    justify-content: center;
+    flex-direction: column;
+  }
+  .contestio-header #contestio-header-text {
+    text-align: center;
+  }
+  .contestio-header ul {
+    justify-content: center;
+    gap: 10px;
+  }
+  .contestio-header ul li {
+    font-size: 14px;
+    min-width: 100px;
+  }
+}
+footer#contestio-footer {
+  height: fit-content;
+  width: 100%;
+  padding: 20px 0 0 0;
+  margin: 2rem auto 0 auto;
+  /* FLEX part */
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  align-items: center;
+}
+footer#contestio-footer p,
+footer#contestio-footer a,
+footer#contestio-footer img,
+footer#contestio-footer span {
+  margin: 0;
+  padding: 0;
+  font-size: 1.2rem;
+  color: #808080;
+}
+footer#contestio-footer span {
+  margin: 3px;
+}
+footer#contestio-footer a.contestio-site {
+  color: #FFDD71;
+  font-weight: 700;
+}
+footer#contestio-footer img {
+  margin-left: 5px;
+  height: 18px;
+  width: 18px;
+}
+.contestio-btn-section {
+  padding-top: 15px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+.contestio-btn-section.mt-1 {
+  margin-top: 1rem;
+}
+.contestio-btn-section .fill-link {
+  text-decoration: none;
+  color: var(--contestio-white);
+  background: var(--contestio-primary);
+  border: solid 1px var(--contestio-primary);
+  border-radius: 5px;
+  line-height: 1.46666667;
+  padding: 10px 15px;
+  box-sizing: border-box;
+  text-align: center;
+  font-weight: bold;
+  font-size: 15px;
+}
+.contestio-btn-section .fill-link:hover,
+.contestio-btn-section .fill-link:active,
+.contestio-btn-section .fill-link:focus {
+  border-color: var(--contestio-primary);
+  color: var(--contestio-primary);
+  background: var(--contestio-white);
+}
+.contestio-btn-section .basic-button {
+  text-decoration: none;
+  color: var(--contestio-white);
+  background: var(--contestio-primary);
+  border: solid 2px var(--contestio-primary);
+  border-radius: 10px;
+  box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease-in-out;
+  padding: 1rem 2rem;
+  box-sizing: border-box;
+  text-align: center;
+  font-weight: bold;
+  font-size: 1.4rem;
+}
+.contestio-btn-section .basic-button:hover {
+  transform: scale(0.97);
+  box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.2);
+}
+.competition-wrapper {
+  width: auto;
+  padding: 2rem;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-auto-rows: 1fr;
+  gap: 3rem;
+  justify-content: center;
+  align-items: center;
+  justify-items: center;
+  align-content: center;
+}
+.competition-wrapper.oblong .competition-item-photo img {
+  border-radius: 10px;
+}
+.competition-wrapper.square .competition-item-photo img {
+  border-radius: 0;
+}
+.competition-wrapper.circle .competition-item-photo img {
+  border-radius: 50%;
+  width: 90%;
+}
+@media (max-width: 1023px) {
+  .competition-wrapper {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2rem;
+  }
+}
+@media screen and (max-width: 767px) {
+  .competition-wrapper {
+    padding: 5px;
+  }
+}
+.competition-item {
+  border-radius: 10px;
+  border: 1px solid #ddddddaa;
+  background: var(--contestio-white);
+  padding: 20px 20px 0 20px;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  cursor: pointer;
+  position: relative;
+  box-sizing: border-box;
+  box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+@media (max-width: 767px) {
+  .competition-item {
+    padding: 8px 8px 0 8px;
+  }
+}
+.competition-item:hover {
+  box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.2);
+  transform: scale(0.95);
+}
+.competition-item .competition-item-body {
+  margin-bottom: 12px;
+}
+.competition-item .competition-item-footer {
+  width: auto;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+}
+@media (max-width: 767px) {
+  .competition-item .competition-item-footer {
+    padding: 5px;
+  }
+}
+.competition-item .competition-item-footer .head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 0.5rem;
+}
+.competition-item .competition-item-footer .head .pseudo {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--contestio-primary);
+  margin: 0;
+  padding: 0;
+}
+.competition-item .competition-item-footer .head .likeCount {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.competition-item .competition-item-footer .head .likeCount img {
+  width: 20px;
+  height: 20px;
+}
+.competition-item .competition-item-footer .head .likeCount span {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--contestio-black);
+}
+@media screen and (max-width: 767px) {
+  .competition-item .competition-item-footer .head .likeCount img {
+    width: 16px;
+    height: 16px;
+  }
+  .competition-item .competition-item-footer .head .likeCount span {
+    font-size: 1.2rem;
+  }
+}
+.competition-item .competition-item-footer .description {
+  height: 17px;
+  width: 100%;
+  font-size: 1.2rem;
+  color: var(--contestio-grey-300);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  word-wrap: break-word;
+}
+.competition-item .competition-item-photo {
+  width: 100%;
+  height: 100%;
+  max-height: 300px;
+  overflow: hidden;
+  position: relative;
+  display: flex;
+}
+.competition-item .competition-item-photo img {
+  margin-bottom: auto;
+  width: 100%;
+  height: fit-content;
+  object-fit: cover;
+  aspect-ratio: 1 / 1;
+}
+.competition-item .competition-item-photo .rank {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  background: var(--contestio-white);
+  border-radius: 50%;
+  font-size: 1.2rem;
+  box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.1);
+  border: 1px solid #ddddddaa;
+  height: 6rem;
+  width: 6rem;
+  aspect-ratio: 1 / 1;
+  width: fit-content;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+@media screen and (max-width: 767px) {
+  .competition-item .competition-item-photo .rank {
+    top: 0.2rem;
+    left: 0.2rem;
+    height: 4rem;
+    width: 4rem;
+  }
+  .competition-item .competition-item-photo .rank img {
+    width: 20px;
+    height: 20px;
+  }
+}
+.competition-item .competition-item-photo .rank span {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  line-height: 1.6rem;
+}
+.competition-item .competition-item-photo .rank span .rankLevel {
+  display: block;
+  font-size: 1.8rem;
+  font-weight: 700;
+}
+@media screen and (max-width: 767px) {
+  .competition-item .competition-item-photo .rank span {
+    font-size: 1rem;
+  }
+  .competition-item .competition-item-photo .rank span .rankLevel {
+    font-size: 1.2rem;
+    line-height: 1rem;
+  }
+}
+.competition-item .competition-item-photo .rank img {
+  margin: auto;
+  width: 30px;
+  height: 30px;
+  object-fit: contain;
+  border-radius: 0;
+}
+/* Overlay Styles */
+.contestio_overlay {
+  z-index: 50;
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  left: 0;
+  top: 0;
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(10px);
+  border-radius: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+/*Dialog Styles*/
+dialog,
+.contestio_overlay aside,
+.contest_preview {
+  padding: 1rem 3rem;
+  background: white;
+  width: 100%;
+  max-width: 360px;
+  max-height: 65vh;
+  overflow-y: auto;
+  padding-top: 2rem;
+  border-radius: 20px;
+  border: 0;
+  box-shadow: 0 5px 30px 0 rgba(0, 0, 0, 0.1);
+  animation: fadeIn 400ms ease both;
+  position: relative;
+  z-index: 100;
+}
+dialog.increaseZ,
+.contestio_overlay aside.increaseZ,
+.contest_preview.increaseZ {
+  z-index: 150;
+}
+@media (max-width: 768px) {
+  dialog,
+  .contestio_overlay aside,
+  .contest_preview {
+    width: 90%;
+    max-width: calc(100% - 20px);
+    padding: 1rem;
+  }
+}
+dialog:focus,
+.contestio_overlay aside:focus,
+.contest_preview:focus,
+dialog:active,
+.contestio_overlay aside:active,
+.contest_preview:active,
+dialog:hover,
+.contestio_overlay aside:hover,
+.contest_preview:hover {
+  outline: none;
+  box-shadow: 0 5px 30px 0 rgba(0, 0, 0, 0.1);
+}
+dialog .x,
+.contestio_overlay aside .x,
+.contest_preview .x {
+  filter: grayscale(1);
+  border: none;
+  background: none;
+  position: absolute;
+  top: 15px;
+  right: 10px;
+  transition: filter 0.3s ease, transform 0.3s ease;
+  cursor: pointer;
+  transform-origin: center;
+  z-index: 999;
+}
+dialog .x:hover,
+.contestio_overlay aside .x:hover,
+.contest_preview .x:hover {
+  filter: grayscale(0);
+  transform: scale(1.1);
+}
+dialog h2,
+.contestio_overlay aside h2,
+.contest_preview h2 {
+  font-weight: 600;
+  font-size: 2rem;
+  padding-bottom: 1rem;
+}
+dialog p,
+.contestio_overlay aside p,
+.contest_preview p {
+  font-size: 1.5rem;
+  padding: 0.5rem 0;
+}
+dialog .full-width,
+.contestio_overlay aside .full-width,
+.contest_preview .full-width {
+  width: 100%;
+}
+dialog .error-msg,
+.contestio_overlay aside .error-msg,
+.contest_preview .error-msg {
+  width: 100%;
+  text-align: center;
+  font-size: 1.4rem;
+  font-weight: 500;
+  margin-top: 1rem;
+}
+dialog .error-msg .error,
+.contestio_overlay aside .error-msg .error,
+.contest_preview .error-msg .error {
+  color: var(--contestio-danger);
+}
+dialog .error-msg .success,
+.contestio_overlay aside .error-msg .success,
+.contest_preview .error-msg .success {
+  color: var(--contestio-success);
+}
+dialog select,
+.contestio_overlay aside select,
+.contest_preview select {
+  width: 100%;
+  height: auto;
+  padding: 0.7rem 1rem;
+  margin-top: 0.5rem;
+  margin-bottom: 1rem;
+  background-color: #f8f8ff;
+  border: 2px #dedede solid;
+  border-radius: 5px;
+  outline: none;
+  font-size: 1.5rem;
+  transition: border-color 0.3s ease;
+}
+dialog select:active,
+.contestio_overlay aside select:active,
+.contest_preview select:active,
+dialog select:focus,
+.contestio_overlay aside select:focus,
+.contest_preview select:focus {
+  border-color: var(--contestio-primary);
+  box-shadow: none;
+  outline: none;
+}
+dialog textarea,
+.contestio_overlay aside textarea,
+.contest_preview textarea {
+  width: 100%;
+  padding: 1rem;
+  margin-top: 1rem;
+  background-color: #f8f8ff;
+  border: 2px #dedede solid;
+  border-radius: 5px;
+  outline: none;
+  font-size: 1.5rem;
+  transition: border-color 0.3s ease;
+  max-height: 10rem;
+  resize: vertical;
+}
+dialog textarea:active,
+.contestio_overlay aside textarea:active,
+.contest_preview textarea:active,
+dialog textarea:focus,
+.contestio_overlay aside textarea:focus,
+.contest_preview textarea:focus {
+  border-color: var(--contestio-primary);
+  box-shadow: none;
+  outline: none;
+}
+dialog footer,
+.contestio_overlay aside footer,
+.contest_preview footer {
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
+  padding: 2rem 0;
+}
+dialog footer button,
+.contestio_overlay aside footer button,
+.contest_preview footer button {
+  outline: none;
+  border: none;
+  background: none;
+  transition: all 0.3s ease;
+}
+dialog footer button:first-child,
+.contestio_overlay aside footer button:first-child,
+.contest_preview footer button:first-child {
+  color: var(--contestio-black);
+  background: var(--contestio-white);
+  border: solid 1px var(--contestio-grey-100);
+  border-radius: 8px;
+  padding: 10px;
+  margin-right: 10px;
+}
+dialog footer button:first-child:hover,
+.contestio_overlay aside footer button:first-child:hover,
+.contest_preview footer button:first-child:hover,
+dialog footer button:first-child:active,
+.contestio_overlay aside footer button:first-child:active,
+.contest_preview footer button:first-child:active,
+dialog footer button:first-child:focus,
+.contestio_overlay aside footer button:first-child:focus,
+.contest_preview footer button:first-child:focus {
+  border-color: var(--contestio-primary);
+  color: var(--contestio-primary);
+}
+dialog footer button:last-child,
+.contestio_overlay aside footer button:last-child,
+.contest_preview footer button:last-child {
+  color: var(--contestio-white);
+  background: var(--contestio-danger);
+  border-radius: 8px;
+  padding: 10px;
+}
+dialog footer button:last-child.transparent,
+.contestio_overlay aside footer button:last-child.transparent,
+.contest_preview footer button:last-child.transparent {
+  background: none;
+  color: var(--contestio-black);
+  border: none;
+}
+dialog footer button:last-child.success,
+.contestio_overlay aside footer button:last-child.success,
+.contest_preview footer button:last-child.success {
+  background: var(--contestio-primary);
+}
+dialog footer button:last-child:hover,
+.contestio_overlay aside footer button:last-child:hover,
+.contest_preview footer button:last-child:hover,
+dialog footer button:last-child:active,
+.contestio_overlay aside footer button:last-child:active,
+.contest_preview footer button:last-child:active,
+dialog footer button:last-child:focus,
+.contestio_overlay aside footer button:last-child:focus,
+.contest_preview footer button:last-child:focus {
+  border: none;
+  transform: scale(0.97);
+}
+dialog footer button:last-child:hover.success,
+.contestio_overlay aside footer button:last-child:hover.success,
+.contest_preview footer button:last-child:hover.success,
+dialog footer button:last-child:active.success,
+.contestio_overlay aside footer button:last-child:active.success,
+.contest_preview footer button:last-child:active.success,
+dialog footer button:last-child:focus.success,
+.contestio_overlay aside footer button:last-child:focus.success,
+.contest_preview footer button:last-child:focus.success {
+  background: var(--contestio-secondary);
+}
+dialog footer button:last-child:hover.transparent,
+.contestio_overlay aside footer button:last-child:hover.transparent,
+.contest_preview footer button:last-child:hover.transparent,
+dialog footer button:last-child:active.transparent,
+.contestio_overlay aside footer button:last-child:active.transparent,
+.contest_preview footer button:last-child:active.transparent,
+dialog footer button:last-child:focus.transparent,
+.contestio_overlay aside footer button:last-child:focus.transparent,
+.contest_preview footer button:last-child:focus.transparent {
+  background: none;
+}
+dialog.withForm,
+.contestio_overlay aside.withForm,
+.contest_preview.withForm {
+  max-width: 400px;
+  color: var(--contestio-black);
+}
+dialog.withForm h2,
+.contestio_overlay aside.withForm h2,
+.contest_preview.withForm h2 {
+  font-size: 3.5rem;
+}
+dialog.withForm form,
+.contestio_overlay aside.withForm form,
+.contest_preview.withForm form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+dialog.withForm form .field,
+.contestio_overlay aside.withForm form .field,
+.contest_preview.withForm form .field {
+  width: 100%;
+  margin-bottom: 1rem;
+}
+dialog.withForm form .field label,
+.contestio_overlay aside.withForm form .field label,
+.contest_preview.withForm form .field label {
+  width: 100%;
+  text-align: left;
+  font-size: 1.5rem;
+}
+dialog.withForm form .field input,
+.contestio_overlay aside.withForm form .field input,
+.contest_preview.withForm form .field input {
+  width: 100%;
+  padding: 1rem;
+  margin-top: 0.5rem;
+  background-color: #f8f8ff;
+  border: 2px #dedede solid;
+  border-radius: 5px;
+  outline: none;
+  font-size: 1.5rem;
+  transition: all 0.3s ease;
+}
+dialog.withForm form .field input:active,
+.contestio_overlay aside.withForm form .field input:active,
+.contest_preview.withForm form .field input:active,
+dialog.withForm form .field input:focus,
+.contestio_overlay aside.withForm form .field input:focus,
+.contest_preview.withForm form .field input:focus {
+  border-color: var(--contestio-primary);
+  box-shadow: none;
+  outline: none;
+}
+dialog.withForm form .field .forgetPassword,
+.contestio_overlay aside.withForm form .field .forgetPassword,
+.contest_preview.withForm form .field .forgetPassword {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+}
+dialog.withForm form .field .forgetPassword a,
+.contestio_overlay aside.withForm form .field .forgetPassword a,
+.contest_preview.withForm form .field .forgetPassword a {
+  color: var(--contestio-info);
+  width: 100%;
+  text-align: right;
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+dialog.withForm form .field .forgetPassword a:hover,
+.contestio_overlay aside.withForm form .field .forgetPassword a:hover,
+.contest_preview.withForm form .field .forgetPassword a:hover,
+dialog.withForm form .field .forgetPassword a:active,
+.contestio_overlay aside.withForm form .field .forgetPassword a:active,
+.contest_preview.withForm form .field .forgetPassword a:active,
+dialog.withForm form .field .forgetPassword a:focus,
+.contestio_overlay aside.withForm form .field .forgetPassword a:focus,
+.contest_preview.withForm form .field .forgetPassword a:focus {
+  color: var(--contestio-primary);
+}
+dialog.withForm form button[type="submit"],
+.contestio_overlay aside.withForm form button[type="submit"],
+.contest_preview.withForm form button[type="submit"] {
+  width: fit-content;
+  background: var(--contestio-primary);
+  color: var(--contestio-white);
+  border: none;
+  outline: none;
+  border-radius: 30px;
+  padding: 1rem 2rem;
+  margin: 1rem auto 1rem auto;
+  font-size: 1.5rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+dialog.withForm form button[type="submit"]:hover,
+.contestio_overlay aside.withForm form button[type="submit"]:hover,
+.contest_preview.withForm form button[type="submit"]:hover,
+dialog.withForm form button[type="submit"]:active,
+.contestio_overlay aside.withForm form button[type="submit"]:active,
+.contest_preview.withForm form button[type="submit"]:active,
+dialog.withForm form button[type="submit"]:focus,
+.contestio_overlay aside.withForm form button[type="submit"]:focus,
+.contest_preview.withForm form button[type="submit"]:focus {
+  background: var(--contestio-secondary);
+  border: none;
+}
+dialog p.light,
+.contestio_overlay aside p.light,
+.contest_preview p.light {
+  color: var(--contestio-grey-200);
+  font-size: 1.3rem;
+  margin-top: 1rem;
+  text-align: center;
+}
+dialog p.light.mt-0,
+.contestio_overlay aside p.light.mt-0,
+.contest_preview p.light.mt-0 {
+  margin-top: 0;
+}
+dialog p.error-msg,
+.contestio_overlay aside p.error-msg,
+.contest_preview p.error-msg {
+  color: var(--contestio-danger);
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-top: 1rem;
+  text-align: center;
+}
+dialog p.error-msg:empty,
+.contestio_overlay aside p.error-msg:empty,
+.contest_preview p.error-msg:empty {
+  display: none;
+}
+dialog .response,
+.contestio_overlay aside .response,
+.contest_preview .response {
+  font-size: 1.5rem;
+  width: 90%;
+  width: auto;
+  text-align: center;
+  padding: 1rem;
+  margin: 0.2rem auto;
+}
+dialog .response:empty,
+.contestio_overlay aside .response:empty,
+.contest_preview .response:empty {
+  display: none;
+}
+dialog .response b.error,
+.contestio_overlay aside .response b.error,
+.contest_preview .response b.error {
+  color: var(--contestio-danger);
+}
+dialog .response b.success,
+.contestio_overlay aside .response b.success,
+.contest_preview .response b.success {
+  color: var(--contestio-success);
+}
+dialog .survey_answers,
+.contestio_overlay aside .survey_answers,
+.contest_preview .survey_answers {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  width: 100%;
+}
+dialog .survey_answers .answer,
+.contestio_overlay aside .survey_answers .answer,
+.contest_preview .survey_answers .answer {
+  width: 100%;
+  padding: 0;
+  border-radius: 5px;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  transition: all 0.3s ease;
+}
+dialog .survey_answers .answer label,
+.contestio_overlay aside .survey_answers .answer label,
+.contest_preview .survey_answers .answer label {
+  font-size: 1.5rem;
+  text-align: left;
+  cursor: pointer;
+  padding: 0.5rem;
+  display: block;
+  width: calc(100% - 3rem);
+}
+dialog .survey_answers .answer input,
+.contestio_overlay aside .survey_answers .answer input,
+.contest_preview .survey_answers .answer input {
+  width: 3rem;
+  accent-color: var(--contestio-primary);
+}
+dialog .survey_answers .answer input:active,
+.contestio_overlay aside .survey_answers .answer input:active,
+.contest_preview .survey_answers .answer input:active,
+dialog .survey_answers .answer input:focus,
+.contestio_overlay aside .survey_answers .answer input:focus,
+.contest_preview .survey_answers .answer input:focus {
+  outline: none;
+  box-shadow: none;
+}
+dialog .survey_answers .answer:hover,
+.contestio_overlay aside .survey_answers .answer:hover,
+.contest_preview .survey_answers .answer:hover {
+  cursor: pointer;
+  background: var(--contestio-grey-100);
+}
+dialog.participation,
+.contestio_overlay aside.participation,
+.contest_preview.participation {
+  max-width: 800px;
+  height: auto;
+  overflow-x: hidden;
+  padding: 2rem;
+}
+@media (max-width: 768px) {
+  dialog.participation,
+  .contestio_overlay aside.participation,
+  .contest_preview.participation {
+    width: 90%;
+    max-width: 400px;
+    padding: 1rem;
+  }
+}
+dialog.participation .contestio_dialog_body,
+.contestio_overlay aside.participation .contestio_dialog_body,
+.contest_preview.participation .contestio_dialog_body {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: flex-start;
+}
+dialog.participation .contestio_dialog_body .actions_div,
+.contestio_overlay aside.participation .contestio_dialog_body .actions_div,
+.contest_preview.participation .contestio_dialog_body .actions_div {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 5rem;
+  margin-bottom: 1rem;
+}
+dialog.participation .contestio_dialog_body .actions_div .likes,
+.contestio_overlay aside.participation .contestio_dialog_body .actions_div .likes,
+.contest_preview.participation .contestio_dialog_body .actions_div .likes,
+dialog.participation .contestio_dialog_body .actions_div .rank,
+.contestio_overlay aside.participation .contestio_dialog_body .actions_div .rank,
+.contest_preview.participation .contestio_dialog_body .actions_div .rank {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+}
+dialog.participation .contestio_dialog_body .actions_div .likes img,
+.contestio_overlay aside.participation .contestio_dialog_body .actions_div .likes img,
+.contest_preview.participation .contestio_dialog_body .actions_div .likes img,
+dialog.participation .contestio_dialog_body .actions_div .rank img,
+.contestio_overlay aside.participation .contestio_dialog_body .actions_div .rank img,
+.contest_preview.participation .contestio_dialog_body .actions_div .rank img {
+  width: 25px;
+  height: auto;
+}
+dialog.participation .contestio_dialog_body .actions_div .likes span,
+.contestio_overlay aside.participation .contestio_dialog_body .actions_div .likes span,
+.contest_preview.participation .contestio_dialog_body .actions_div .likes span,
+dialog.participation .contestio_dialog_body .actions_div .rank span,
+.contestio_overlay aside.participation .contestio_dialog_body .actions_div .rank span,
+.contest_preview.participation .contestio_dialog_body .actions_div .rank span {
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+dialog.participation .contestio_dialog_body .actions_div .canLike,
+.contestio_overlay aside.participation .contestio_dialog_body .actions_div .canLike,
+.contest_preview.participation .contestio_dialog_body .actions_div .canLike {
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+dialog.participation .contestio_dialog_body .actions_div .canLike:hover,
+.contestio_overlay aside.participation .contestio_dialog_body .actions_div .canLike:hover,
+.contest_preview.participation .contestio_dialog_body .actions_div .canLike:hover {
+  transform: scale(1.1);
+}
+dialog.participation button[type="submit"],
+.contestio_overlay aside.participation button[type="submit"],
+.contest_preview.participation button[type="submit"] {
+  width: 80%;
+  background: var(--contestio-primary);
+  color: var(--contestio-white);
+  border: none;
+  outline: none;
+  border-radius: 30px;
+  padding: 1rem 2rem;
+  margin: 2rem auto;
+  font-size: 1.5rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+dialog.participation button[type="submit"].mb-0,
+.contestio_overlay aside.participation button[type="submit"].mb-0,
+.contest_preview.participation button[type="submit"].mb-0 {
+  margin-bottom: 0;
+}
+dialog.participation button[type="submit"]:hover,
+.contestio_overlay aside.participation button[type="submit"]:hover,
+.contest_preview.participation button[type="submit"]:hover,
+dialog.participation button[type="submit"]:active,
+.contestio_overlay aside.participation button[type="submit"]:active,
+.contest_preview.participation button[type="submit"]:active,
+dialog.participation button[type="submit"]:focus,
+.contestio_overlay aside.participation button[type="submit"]:focus,
+.contest_preview.participation button[type="submit"]:focus {
+  background: var(--contestio-secondary);
+  border: none;
+}
+dialog.participation footer,
+.contestio_overlay aside.participation footer,
+.contest_preview.participation footer {
+  width: 100%;
+  padding: 0;
+  display: flex;
+  justify-content: space-between;
+  position: relative;
+}
+dialog.participation footer button,
+.contestio_overlay aside.participation footer button,
+.contest_preview.participation footer button {
+  margin: 0;
+  padding: 0;
+  outline: none;
+  border: none;
+}
+dialog.participation footer .socials_links,
+.contestio_overlay aside.participation footer .socials_links,
+.contest_preview.participation footer .socials_links {
+  display: flex;
+  gap: 1.5rem;
+  margin: 0 1rem 0 0;
+  padding: 0;
+}
+dialog.participation footer .socials_links li,
+.contestio_overlay aside.participation footer .socials_links li,
+.contest_preview.participation footer .socials_links li {
+  list-style: none;
+  display: inline-block;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+dialog.participation footer .socials_links li:hover,
+.contestio_overlay aside.participation footer .socials_links li:hover,
+.contest_preview.participation footer .socials_links li:hover {
+  transform: scale(1.1);
+}
+dialog.participation footer .socials_links li img,
+.contestio_overlay aside.participation footer .socials_links li img,
+.contest_preview.participation footer .socials_links li img {
+  width: 25px;
+  height: 25px;
+}
+@media screen and (min-width: 768px) {
+  dialog.participation footer .socials_links li.messenger-link,
+  .contestio_overlay aside.participation footer .socials_links li.messenger-link,
+  .contest_preview.participation footer .socials_links li.messenger-link {
+    display: none;
+  }
+}
+dialog.participation footer .flag_button .report-link:hover,
+.contestio_overlay aside.participation footer .flag_button .report-link:hover,
+.contest_preview.participation footer .flag_button .report-link:hover {
+  transition: all 0.3s ease;
+  transform: scale(1.1);
+}
+dialog.twoPart,
+.contestio_overlay aside.twoPart,
+.contest_preview.twoPart {
+  display: grid;
+  grid-template-columns: repeat(20, 1fr);
+  gap: 1rem;
+  max-width: 800px;
+  height: auto;
+  overflow-x: hidden;
+  padding: 2rem;
+}
+@media (max-width: 768px) {
+  dialog.twoPart,
+  .contestio_overlay aside.twoPart,
+  .contest_preview.twoPart {
+    display: flex;
+    flex-direction: column;
+  }
+}
+@media (max-width: 768px) {
+  dialog.twoPart,
+  .contestio_overlay aside.twoPart,
+  .contest_preview.twoPart {
+    width: 90%;
+    max-width: 400px;
+    padding: 1rem;
+  }
+}
+dialog.twoPart .firstPart,
+.contestio_overlay aside.twoPart .firstPart,
+.contest_preview.twoPart .firstPart {
+  grid-row: 1;
+  grid-column: span 10;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+@media (max-width: 768px) {
+  dialog.twoPart .firstPart,
+  .contestio_overlay aside.twoPart .firstPart,
+  .contest_preview.twoPart .firstPart {
+    width: 100%;
+    grid-column: unset;
+  }
+}
+dialog.twoPart .firstPart img,
+.contestio_overlay aside.twoPart .firstPart img,
+.contest_preview.twoPart .firstPart img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+dialog.twoPart .firstPart img.placeholderImage,
+.contestio_overlay aside.twoPart .firstPart img.placeholderImage,
+.contest_preview.twoPart .firstPart img.placeholderImage {
+  max-width: 400px;
+  max-height: 400px;
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+  border-radius: 10px;
+}
+@media (max-width: 1024px) {
+  dialog.twoPart .firstPart img.placeholderImage,
+  .contestio_overlay aside.twoPart .firstPart img.placeholderImage,
+  .contest_preview.twoPart .firstPart img.placeholderImage {
+    max-width: 350px;
+    max-height: 350px;
+  }
+}
+@media (max-width: 768px) {
+  dialog.twoPart .firstPart img.placeholderImage,
+  .contestio_overlay aside.twoPart .firstPart img.placeholderImage,
+  .contest_preview.twoPart .firstPart img.placeholderImage {
+    max-width: 300px;
+    max-height: 300px;
+  }
+}
+dialog.twoPart .firstPart #croppedImage,
+.contestio_overlay aside.twoPart .firstPart #croppedImage,
+.contest_preview.twoPart .firstPart #croppedImage,
+dialog.twoPart .firstPart .partImage,
+.contestio_overlay aside.twoPart .firstPart .partImage,
+.contest_preview.twoPart .firstPart .partImage {
+  width: 90%;
+  height: auto;
+  margin: auto;
+  object-fit: contain;
+  border-radius: 10px;
+  box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.1);
+}
+@media (max-width: 768px) {
+  dialog.twoPart .firstPart #croppedImage,
+  .contestio_overlay aside.twoPart .firstPart #croppedImage,
+  .contest_preview.twoPart .firstPart #croppedImage,
+  dialog.twoPart .firstPart .partImage,
+  .contestio_overlay aside.twoPart .firstPart .partImage,
+  .contest_preview.twoPart .firstPart .partImage {
+    width: 50%;
+  }
+}
+dialog.twoPart .firstPart .selectImg,
+.contestio_overlay aside.twoPart .firstPart .selectImg,
+.contest_preview.twoPart .firstPart .selectImg {
+  width: 150px;
+  height: 150px;
+  border-radius: 20px;
+  border: 2px solid var(--contestio-primary);
+  background-color: rgba(255, 255, 255, 0.75);
+  color: var(--contestio-grey-300);
+  z-index: 150;
+  transition: all 0.3s ease;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+dialog.twoPart .firstPart .selectImg img,
+.contestio_overlay aside.twoPart .firstPart .selectImg img,
+.contest_preview.twoPart .firstPart .selectImg img {
+  width: 70px;
+  height: 70px;
+  transition: all 0.3s ease;
+}
+dialog.twoPart .firstPart .selectImg p:hover,
+.contestio_overlay aside.twoPart .firstPart .selectImg p:hover,
+.contest_preview.twoPart .firstPart .selectImg p:hover {
+  text-decoration: underline;
+}
+dialog.twoPart .firstPart .selectImg:hover,
+.contestio_overlay aside.twoPart .firstPart .selectImg:hover,
+.contest_preview.twoPart .firstPart .selectImg:hover {
+  cursor: pointer;
+  background: #ffffff;
+  border-radius: 30px;
+}
+dialog.twoPart .firstPart .selectImg:hover img,
+.contestio_overlay aside.twoPart .firstPart .selectImg:hover img,
+.contest_preview.twoPart .firstPart .selectImg:hover img {
+  transform: scale(1.1);
+}
+dialog.twoPart .secondPart,
+.contestio_overlay aside.twoPart .secondPart,
+.contest_preview.twoPart .secondPart {
+  grid-row: 1;
+  grid-column: span 10;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+}
+@media (max-width: 768px) {
+  dialog.twoPart .secondPart,
+  .contestio_overlay aside.twoPart .secondPart,
+  .contest_preview.twoPart .secondPart {
+    width: 100%;
+    grid-column: unset;
+  }
+}
+dialog.twoPart .secondPart button,
+.contestio_overlay aside.twoPart .secondPart button,
+.contest_preview.twoPart .secondPart button {
+  margin: 1rem auto;
+}
+dialog.twoPart .secondPart p,
+.contestio_overlay aside.twoPart .secondPart p,
+.contest_preview.twoPart .secondPart p,
+dialog.twoPart .secondPart h2,
+.contestio_overlay aside.twoPart .secondPart h2,
+.contest_preview.twoPart .secondPart h2 {
+  width: 100%;
+  text-align: center;
+}
+dialog.twoPart .secondPart p,
+.contestio_overlay aside.twoPart .secondPart p,
+.contest_preview.twoPart .secondPart p {
+  font-size: 1.4rem;
+  color: var(--contestio-grey-300);
+}
+dialog.twoPart .secondPart p.time-left-msg,
+.contestio_overlay aside.twoPart .secondPart p.time-left-msg,
+.contest_preview.twoPart .secondPart p.time-left-msg {
+  width: auto;
+  margin: auto;
+  padding: 1rem 2rem;
+  font-weight: bold;
+  text-align: center;
+}
+dialog.twoPart .secondPart h2,
+.contestio_overlay aside.twoPart .secondPart h2,
+.contest_preview.twoPart .secondPart h2 {
+  margin-bottom: 0.5rem;
+}
+dialog.twoPart .secondPart .full-width,
+.contestio_overlay aside.twoPart .secondPart .full-width,
+.contest_preview.twoPart .secondPart .full-width {
+  width: 90%;
+  margin: 1rem auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+}
+dialog.twoPart .secondPart .full-width p:not(.postDescription),
+.contestio_overlay aside.twoPart .secondPart .full-width p:not(.postDescription),
+.contest_preview.twoPart .secondPart .full-width p:not(.postDescription) {
+  text-align: left;
+  width: 100%;
+}
+dialog.twoPart .secondPart button[type="submit"],
+.contestio_overlay aside.twoPart .secondPart button[type="submit"],
+.contest_preview.twoPart .secondPart button[type="submit"] {
+  width: fit-content;
+  min-width: 50%;
+}
+dialog.twoPart .secondPart button[type="submit"].danger,
+.contestio_overlay aside.twoPart .secondPart button[type="submit"].danger,
+.contest_preview.twoPart .secondPart button[type="submit"].danger {
+  background-color: var(--contestio-danger);
+}
+dialog.twoPart .secondPart footer,
+.contestio_overlay aside.twoPart .secondPart footer,
+.contest_preview.twoPart .secondPart footer {
+  margin-top: 2rem;
+  width: 80%;
+}
+dialog.twoPart .secondPart footer.centered,
+.contestio_overlay aside.twoPart .secondPart footer.centered,
+.contest_preview.twoPart .secondPart footer.centered {
+  justify-content: center;
+}
+dialog.twoPart .secondPart footer button,
+.contestio_overlay aside.twoPart .secondPart footer button,
+.contest_preview.twoPart .secondPart footer button {
+  margin: 0;
+}
+dialog.contest_preview,
+.contestio_overlay aside.contest_preview,
+.contest_preview.contest_preview {
+  margin: 2rem auto 4rem auto;
+  padding: 2rem;
+  max-height: unset;
+  z-index: 10;
+}
+dialog.contest_preview.mt-7,
+.contestio_overlay aside.contest_preview.mt-7,
+.contest_preview.contest_preview.mt-7 {
+  margin-top: 7rem;
+}
+dialog.contest_preview .main_sep .right_part footer.centered,
+.contestio_overlay aside.contest_preview .main_sep .right_part footer.centered,
+.contest_preview.contest_preview .main_sep .right_part footer.centered {
+  justify-content: center;
+}
+dialog.contest_preview .main_sep .right_part > p,
+.contestio_overlay aside.contest_preview .main_sep .right_part > p,
+.contest_preview.contest_preview .main_sep .right_part > p {
+  text-align: center;
+}
+@media (max-width: 768px) {
+  dialog.contest_preview,
+  .contestio_overlay aside.contest_preview,
+  .contest_preview.contest_preview {
+    padding: 2rem;
+    max-height: unset;
+  }
+  dialog.contest_preview .main_sep .left_part,
+  .contestio_overlay aside.contest_preview .main_sep .left_part,
+  .contest_preview.contest_preview .main_sep .left_part {
+    margin-top: 0;
+    height: auto;
+    min-height: unset;
+  }
+  dialog.contest_preview .main_sep .right_part footer,
+  .contestio_overlay aside.contest_preview .main_sep .right_part footer,
+  .contest_preview.contest_preview .main_sep .right_part footer {
+    margin-top: 1rem;
+  }
+}
+dialog.survey,
+.contestio_overlay aside.survey,
+.contest_preview.survey {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 1rem;
+}
+dialog.survey:not(.survey-end),
+.contestio_overlay aside.survey:not(.survey-end),
+.contest_preview.survey:not(.survey-end) {
+  max-width: 800px;
+  height: 70%;
+  overflow-x: hidden;
+}
+@media (max-width: 768px) {
+  dialog.survey,
+  .contestio_overlay aside.survey,
+  .contest_preview.survey {
+    width: 90%;
+    max-width: 400px;
+  }
+}
+dialog.survey form,
+.contestio_overlay aside.survey form,
+.contest_preview.survey form {
+  padding: 1.5rem;
+  margin: 0rem auto;
+  width: 90%;
+  border: 1px solid #ddddddaa;
+  border-radius: 10px;
+  box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.1);
+}
+dialog.survey div.success,
+.contestio_overlay aside.survey div.success,
+.contest_preview.survey div.success {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  padding: 1.5rem;
+  margin: 0rem auto 2rem auto;
+  width: 80%;
+  height: 80%;
+}
+dialog.survey div.success p,
+.contestio_overlay aside.survey div.success p,
+.contest_preview.survey div.success p {
+  font-size: 2rem;
+  font-weight: 600;
+  text-align: center;
+  color: var(--contestio-success);
+}
+dialog.survey .survey_item,
+.contestio_overlay aside.survey .survey_item,
+.contest_preview.survey .survey_item {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  height: auto;
+  width: 100%;
+}
+dialog.survey .survey_item h3,
+.contestio_overlay aside.survey .survey_item h3,
+.contest_preview.survey .survey_item h3 {
+  font-size: 1.8rem;
+  font-weight: 600;
+  width: 100%;
+  text-align: center;
+}
+dialog.survey footer,
+.contestio_overlay aside.survey footer,
+.contest_preview.survey footer {
+  padding-top: 0;
+}
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.openDialogLoginContainer {
+  width: 100%;
+  margin-top: 2rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.sortby-section {
+  width: auto;
+  padding: 1rem 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.sortby-section span {
+  font-size: 1.3rem;
+  font-weight: 700;
+}
+.sortby-section a {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.3rem;
+}
+.sortby-section a img {
+  width: auto;
+  height: 1.3rem;
+  margin-left: 0.5rem;
+}
+.sortby-section a:active,
+.sortby-section a:focus {
+  outline: none;
+  color: #006bb4;
+}
+.selectImg {
+  width: 150px;
+  height: 150px;
+  border-radius: 20px;
+  border: 2px solid var(--contestio-primary);
+  background-color: rgba(255, 255, 255, 0.75);
+  color: var(--contestio-grey-300);
+  z-index: 150;
+  transition: all 0.3s ease;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+.selectImg img {
+  width: 70px;
+  height: 70px;
+  transition: all 0.3s ease;
+}
+.selectImg p:hover {
+  text-decoration: underline;
+}
+.selectImg:hover {
+  cursor: pointer;
+  background: #ffffff;
+  border-radius: 30px;
+}
+.selectImg:hover img {
+  transform: scale(1.1);
+}
+.crop_part {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  height: auto;
+  width: 100%;
+  max-width: 400px;
+  max-height: 400px;
+}
+.crop_part canvas {
+  width: auto;
+  height: 100%;
+  border-radius: 10px;
+  margin: auto;
+}
+.crop_part canvas.isLandscape {
+  width: 100%;
+  height: auto;
+}
+.crop_part .canvas_container {
+  position: relative;
+  display: flex;
+  width: auto;
+  height: 100%;
+  margin: auto;
+}
+.crop_part .canvas_container.isLandscape {
+  width: 100%;
+  height: auto;
+}
+.crop_part .canvas_container #deleteImage {
+  position: absolute;
+  top: -1rem;
+  left: -1rem;
+  z-index: 999;
+  background: #fff;
+  border-radius: 50%;
+  border: none;
+  outline: none;
+  box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.1);
+  padding: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease-in-out;
+}
+.crop_part .canvas_container #deleteImage:hover {
+  background: #f1f1f1;
+}
+p.danger {
+  text-align: center !important;
+  font-weight: bold !important;
+  color: var(--contestio-danger) !important;
+}
+.crop-area {
+  position: absolute;
+  border: 2px dashed rgba(255, 255, 255, 0.5);
+  cursor: move;
+}
+.crop-area .resize-handle {
+  width: 10px;
+  height: 10px;
+  background: #000;
+  border-radius: 0;
+  position: absolute;
+  cursor: nwse-resize;
+}
+.resize-handle.ne {
+  right: -5px;
+  top: -5px;
+  cursor: pointer;
+  pointer-events: none;
+}
+.resize-handle.se {
+  right: -5px;
+  bottom: -5px;
+  cursor: nwse-resize;
+  background-color: var(--contestio-primary);
+  border-radius: 2px;
+}
+.resize-handle.sw {
+  left: -5px;
+  bottom: -5px;
+  cursor: pointer;
+  pointer-events: none;
+}
+.resize-handle.nw {
+  left: -5px;
+  top: -5px;
+  cursor: pointer;
+  pointer-events: none;
+}
+.loading_part {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+.loading_part p {
+  margin-top: 2rem;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--contestio-grey-500);
+}
+.loading_part .loader {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  position: relative;
+  animation: rotate 1s linear infinite;
+}
+.loading_part .loader::before,
+.loading_part .loader::after {
+  content: "";
+  box-sizing: border-box;
+  position: absolute;
+  inset: 0px;
+  border-radius: 50%;
+  border: 5px solid #FFF;
+  animation: prixClipFix 2s linear infinite ;
+}
+.loading_part .loader::after {
+  transform: rotate3d(90, 90, 0, 180deg);
+  border-color: var(--contestio-primary);
+}
+@keyframes rotate {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+@keyframes prixClipFix {
+  0% {
+    clip-path: polygon(50% 50%, 0 0, 0 0, 0 0, 0 0, 0 0);
+  }
+  50% {
+    clip-path: polygon(50% 50%, 0 0, 100% 0, 100% 0, 100% 0, 100% 0);
+  }
+  75%,
+  100% {
+    clip-path: polygon(50% 50%, 0 0, 100% 0, 100% 100%, 100% 100%, 100% 100%);
+  }
+}
+.contestio-link.icon {
+  position: relative !important;
+  vertical-align: middle;
+}
+.contestio-link.icon > a {
+  text-decoration: none;
+  display: flex !important;
+  align-items: center;
+  gap: 8px;
+}
+.contestio-link.icon > a::before {
+  content: "";
+  width: 24px;
+  height: 24px;
+  background-size: contain;
+  background-repeat: no-repeat;
+  display: block;
+}
+.contestio-link.icon.heart a::before {
+  background-image: url('../images/navbar/heart.svg');
+}
+.contestio-link.icon.heart-fill a::before {
+  background-image: url('../images/navbar/heart-fill.svg');
+}
+.contestio-link.icon.images a::before {
+  background-image: url('../images/navbar/images.svg');
+}
+.contestio-link.icon.newspaper a::before {
+  background-image: url('../images/navbar/newspaper.svg');
+}
+.contestio-link.icon.sparkles a::before {
+  background-image: url('../images/navbar/sparkles.svg');
+}
+.contestio-link.icon.star-fill a::before {
+  background-image: url('../images/navbar/star-fill.svg');
+}
+.contestio-link.icon.star a::before {
+  background-image: url('../images/navbar/star.svg');
+}
+.contestio-link.icon.users a::before {
+  background-image: url('../images/navbar/users.svg');
+}
+@media (max-width: 1279px) and (min-width: 1024px) {
+  .contestio-heading {
+    font-size: 26px;
+  }
+  .contestio-text-box {
+    font-size: 14px;
+  }
+}
+@media (max-width: 1023px) and (min-width: 768px) {
+  .contestio-heading {
+    font-size: 22px;
+  }
+  .contestio-text-box {
+    font-size: 14px;
+  }
+}
+.contestio-col-1 {
+  -webkit-box-flex: 0;
+  -ms-flex: 0 0 8.33333333%;
+  flex: 0 0 8.33333333%;
+  max-width: 8.33333333%;
+}
+.contestio-col-2 {
+  -webkit-box-flex: 0;
+  -ms-flex: 0 0 16.66666667%;
+  flex: 0 0 16.66666667%;
+  max-width: 16.66666667%;
+}
+.contestio-col-3 {
+  -webkit-box-flex: 0;
+  -ms-flex: 0 0 25%;
+  flex: 0 0 25%;
+  max-width: 25%;
+}
+.contestio-col-4 {
+  -webkit-box-flex: 0;
+  -ms-flex: 0 0 33.33333333%;
+  flex: 0 0 33.33333333%;
+  max-width: 33.33333333%;
+}
+.contestio-col-5 {
+  -webkit-box-flex: 0;
+  -ms-flex: 0 0 41.66666667%;
+  flex: 0 0 41.66666667%;
+  max-width: 41.66666667%;
+}
+.contestio-col-6 {
+  -webkit-box-flex: 0;
+  -ms-flex: 0 0 50%;
+  flex: 0 0 50%;
+  max-width: 50%;
+}
+.contestio-col-7 {
+  -webkit-box-flex: 0;
+  -ms-flex: 0 0 58.33333333%;
+  flex: 0 0 58.33333333%;
+  max-width: 58.33333333%;
+}
+.contestio-col-8 {
+  -webkit-box-flex: 0;
+  -ms-flex: 0 0 66.66666667%;
+  flex: 0 0 66.66666667%;
+  max-width: 66.66666667%;
+}
+.contestio-col-9 {
+  -webkit-box-flex: 0;
+  -ms-flex: 0 0 75%;
+  flex: 0 0 75%;
+  max-width: 75%;
+}
+.contestio-col-10 {
+  -webkit-box-flex: 0;
+  -ms-flex: 0 0 83.33333333%;
+  flex: 0 0 83.33333333%;
+  max-width: 83.33333333%;
+}
+.contestio-col-11 {
+  -webkit-box-flex: 0;
+  -ms-flex: 0 0 91.66666667%;
+  flex: 0 0 91.66666667%;
+  max-width: 91.66666667%;
+}
+.contestio-col-12 {
+  -webkit-box-flex: 0;
+  -ms-flex: 0 0 100%;
+  flex: 0 0 100%;
+  max-width: 100%;
+}
+@media screen and (max-width: 1023px) {
+  .contestio-heading {
+    font-size: 22px;
+  }
+  .contestio-text-box {
+    font-size: 14px;
+  }
+  .contestio-row [class*="contestio-col-"] {
+    padding-top: 15px;
+    padding-bottom: 15px;
+  }
+  .gap-44 {
+    padding: 20px 0;
+  }
+  .gap-bottom-35 {
+    padding-bottom: 20px;
+  }
+  .full-heading-section.gap-bottom-35 {
+    padding-bottom: 0;
+  }
+}
+@media screen and (max-width: 767px) {
+  .contestio-heading {
+    font-size: 18px;
+  }
+}

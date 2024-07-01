@@ -1,0 +1,17 @@
+<footer id="contestio-footer">
+  <!-- Redirect to the bug report page -->
+  <a
+    href="https://contestio.fr/report-bug?url=<?php echo $this->getUrl('*/*/*', ['_current' => true, '_use_rewrite' => true]); ?>"
+    target="_blank"
+  >
+    Signaler un bug
+  </a>
+
+  <span>-</span>
+
+  <p>
+    Powered by <a href="https://contestio.fr" target="_blank" class="contestio-site">Contestio</a>
+  </p>
+
+  <img src="<?php echo $block->getViewFileUrl('Contestio_Connect::images/trendUp.svg'); ?>" alt="Up" height="18" width="18" />
+</footer>

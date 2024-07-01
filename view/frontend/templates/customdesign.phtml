@@ -1,0 +1,39 @@
+<?php
+$navInactiveColor = $block->getConfigValue('nav_custom/nav_button_inactive/color');
+$navInactiveBackground = $block->getConfigValue('nav_custom/nav_button_inactive/background_color');
+
+$navActiveColor = $block->getConfigValue('nav_custom/nav_button_active/color');
+$navActiveBackground = $block->getConfigValue('nav_custom/nav_button_active/background_color');
+?>
+
+<style>
+	/* Navbar button */
+	<?php if ($navInactiveColor): ?>
+		li.contestio-link a {
+			color: <?= $navInactiveColor ?> !important;
+		}
+		li.contestio-link a::before {
+			color: <?= $navInactiveColor ?> !important;
+		}
+	<?php endif; ?>
+	<?php if ($navInactiveBackground): ?>
+		li.contestio-link {
+			background-color: <?= $navInactiveBackground ?> !important;
+		}
+	<?php endif; ?>
+
+	/* Navbar button active */
+	<?php if ($navActiveColor): ?>
+		li.contestio-link.active a {
+			color: <?= $navActiveColor ?> !important;
+		}
+		li.contestio-link.active a {
+			border-color: <?= $navActiveColor ?> !important;
+		}
+	<?php endif; ?>
+	<?php if ($navActiveBackground): ?>
+		li.contestio-link.active {
+			background-color: <?= $navActiveBackground ?> !important;
+		}
+	<?php endif; ?>
+</style>

@@ -1,0 +1,146 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../Config/etc/system_file.xsd">
+    <system>
+		<!-- for add new tab in Magento2 system configuration section -->
+        <tab id="contestio" translate="label" sortOrder="100">
+            <label>Contestio</label>
+        </tab>
+        <section id="authkeys" translate="label" type="text" sortOrder="320" showInDefault="1" showInWebsite="1" showInStore="1">
+            <label>Clés d'authentification</label>
+            <tab>contestio</tab>
+            <resource>Contestio_Connect::configuration</resource>
+            
+            <group id="clientkey" translate="label" type="text" sortOrder="5" showInDefault="1" showInWebsite="1" showInStore="1">
+                <comment><![CDATA[Pour plus d'informations sur la configuration des clés d'authentification rendez-vous sur sur <a href="https://app.contestio.fr" target="_blank">app.contestio.fr</a> et allez sur la page intégration.]]></comment>
+                <label>Clés d'authentification</label>
+                <field id="clientpubkey" translate="label comment" sortOrder="7" type="text" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Clé publique</label>
+                    <comment>e.g xxxxxxxxxxxx</comment>
+                    <validate>validate-number required-entry</validate>
+                </field>
+                <field id="clientsecret" translate="label comment" sortOrder="7" type="text" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Clé privée</label>
+                    <comment>e.g xxxxxxxxxxxx</comment>
+                    <validate>validate-number required-entry</validate>
+                </field>
+            </group>
+        </section>
+        
+        <!-- New section - Personnalisez la barre de navigation -->
+        <section id="nav_custom" translate="label" type="text" sortOrder="321" showInDefault="1" showInWebsite="1" showInStore="1">
+            <label>Barre de navigation</label>
+            <tab>contestio</tab>
+            <resource>Contestio_Connect::configuration</resource>
+
+            <group id="nav_button" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Paramètres par défaut du bouton</label>
+                <comment><![CDATA[Choisissez une icon à afficher sur le bouton principal de navigation]]></comment>
+                <field id="text" translate="label comment" sortOrder="2" type="text" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Texte à afficher</label>
+                    <comment>e.g. Le Club</comment>
+                    <validate>validate-no-html-tags</validate>
+                </field>
+                <field id="icon" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Icon</label>
+                    <source_model>Contestio\Connect\Model\Config\Source\SelectOptions</source_model> <!-- Modèle source pour les options -->
+                </field>
+            </group>
+
+            <group id="nav_button_inactive" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Styles du bouton inactif</label>
+                <comment><![CDATA[Personnalisez les styles du bouton visible sur la barre de navigation du site amenant sur le plugin contestio lorsque la page active n'est pas l'une du plugin.]]></comment>
+                <field id="color" translate="label comment" sortOrder="2" type="text" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Couleur du texte</label>
+                    <comment>e.g. #FFFFFF</comment>
+                    <validate>validate-no-html-tags</validate>
+                </field>
+                <field id="background_color" translate="label comment" sortOrder="3" type="text" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Couleur de fond</label>
+                    <comment>e.g. #000000</comment>
+                    <validate>validate-no-html-tags</validate>
+                </field>
+            </group>
+
+            <group id="nav_button_active" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Styles du bouton actif</label>
+                <comment><![CDATA[Personnalisez les styles du bouton visible sur la barre de navigation lorsque la page active est l'une du plugin.]]></comment>
+                <field id="color" translate="label comment" sortOrder="5" type="text" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Selected Navigation Button Color</label>
+                    <comment>e.g. #FFFFFF</comment>
+                    <validate>validate-no-html-tags</validate>
+                </field>
+                <field id="background_color" translate="label comment" sortOrder="6" type="text" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Selected Navigation Button Background Color</label>
+                    <comment>e.g. #000000</comment>
+                    <validate>validate-no-html-tags</validate>
+                </field>
+            </group>
+        </section>
+        
+        <!-- New section - Personnalisez les boutons -->
+        <!-- <section id="contest_button_settings" translate="label" type="text" sortOrder="322" showInDefault="1" showInWebsite="1" showInStore="1">
+            <label>Personnalisez les boutons du concours</label>
+            <tab>contestio</tab>
+            <resource>Contestio_Connect::configuration</resource>
+            <group id="contest_button_settings_group" translate="label" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Competition Button Settings</label>
+                <field id="competition_button_text" translate="label comment" sortOrder="1" type="text" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Competition Button Text</label>
+                    <comment>e.g. Enter Competition</comment>
+                    <validate>validate-no-html-tags</validate>
+                </field>
+                <field id="competition_button_size" translate="label comment" sortOrder="2" type="select" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Competition Button Size</label>
+                    <comment>e.g. 12pt, 13pt, 14pt</comment>
+                    <validate>validate-no-html-tags</validate>
+					<source_model>Contestio\Connect\Model\Config\ButtonSizeOptions</source_model>
+                </field>
+                <field id="competition_button_color" translate="label comment" sortOrder="3" type="text" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Competition Button Color</label>
+                    <comment>e.g. #FFFFFF</comment>
+                    <validate>validate-no-html-tags</validate>
+					<frontend_model>Contestio\Connect\Block\Color</frontend_model>
+                </field>
+                <field id="competition_button_background_color" translate="label comment" sortOrder="4" type="text" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Competition Button Background Color</label>
+                    <comment>e.g. #000000</comment>
+                    <validate>validate-no-html-tags</validate>
+					<frontend_model>Contestio\Connect\Block\Color</frontend_model>
+                </field>
+            </group>
+        </section> -->
+        
+        <!-- New section - Bouton pour participer au sondage -->
+        <!-- <section id="survey_button_settings" translate="label" type="text" sortOrder="323" showInDefault="1" showInWebsite="1" showInStore="1">
+            <label>Bouton pour participer au sondage</label>
+            <tab>contestio</tab>
+            <resource>Contestio_Connect::configuration</resource>
+            <group id="survey_button_settings_group" translate="label" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Survey Button Settings</label>
+                <field id="survey_button_text" translate="label comment" sortOrder="1" type="text" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Survey Button Text</label>
+                    <comment>e.g. Take Survey</comment>
+                    <validate>validate-no-html-tags</validate>
+                </field>
+                <field id="survey_button_size" translate="label comment" sortOrder="2" type="select" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Survey Button Size</label>
+                    <comment>e.g. 12pt, 13pt, 14pt</comment>
+                    <validate>validate-no-html-tags</validate>
+					<source_model>Contestio\Connect\Model\Config\ButtonSizeOptions</source_model>
+                </field>
+                <field id="survey_button_color" translate="label comment" sortOrder="3" type="text" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Survey Button Color</label>
+                    <comment>e.g. #FFFFFF</comment>
+                    <validate>validate-no-html-tags</validate>
+					<frontend_model>Contestio\Connect\Block\Color</frontend_model>
+                </field>
+                <field id="survey_button_background_color" translate="label comment" sortOrder="4" type="text" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Survey Button Background Color</label>
+                    <comment>e.g. #000000</comment>
+                    <validate>validate-no-html-tags</validate>
+					<frontend_model>Contestio\Connect\Block\Color</frontend_model>
+                </field>
+            </group>
+        </section> -->
+    </system>
+</config>

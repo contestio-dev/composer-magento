@@ -1,0 +1,2103 @@
+<?php
+// Get the URL of the current page
+$currentPageUrl = $this->getUrl('*/*/*', ['_current' => true, '_use_rewrite' => true]);
+// Remove last index/ at the end
+$currentPageUrl = str_replace('/index/', '/', $currentPageUrl);
+
+// Load placeholder image
+$placeholderImage = $block->getViewFileUrl('Contestio_Connect::images/placeholder.jpg');
+
+// Init variables
+$navButtons = [];
+$authfailed = 0;
+$notfound = 0;
+$serverError = 0;
+$contestData = [];
+$isloggedin = false;
+$selectedValue = '';
+
+$handle = 0;
+$firstname = null;
+$userIdToCheck = 0;
+
+$pageUrl = $this->getUrl('contestio/concours');
+$sortBy = 'likes';
+$orderBy = 'desc';
+
+try {
+	$navButtons = $block->fetchNavButtons();
+	$contestData = $block->fetchContentData();
+	$isloggedin = $block->isCustomerLoggedIn();
+
+	if (isset($contestData['code']) && $contestData['code'] == 'AUTH_401') {
+		throw new Exception('Unauthorized');
+	}
+
+	if ($contestData === false) {
+		throw new Exception('Server error');
+	}
+
+	if (!$contestData || empty($contestData)) {
+		throw new Exception('Not found');
+	}
+
+	if ($isloggedin) {
+		$customer = $block->getCustomerData();	
+		$userIdToCheck = $customer['customer_id'];
+		$handle = $customer['customer_nickname'];
+		$firstname = $customer['customer_fname'];
+	}
+	
+	if (isset($_GET['sortBy']) && $_GET['sortBy']) {
+		$sortBy = $_GET['sortBy'];
+	}
+	if (isset($_GET['orderBy']) && $_GET['orderBy']) {
+		$orderBy = $_GET['orderBy'];
+	}
+
+	$selectedValue = "sortBy={$sortBy}&orderBy={$orderBy}";
+} catch (Exception $e) {
+	if ($e->getMessage() === 'Unauthorized') {
+		$authfailed = 1;
+	} else if ($e->getMessage() === 'Not found') {
+		$notfound = 1;
+	} else {
+		$serverError = 1;
+	}
+}
+
+if ($serverError) {
+	echo $this->getLayout()->createBlock("Magento\Framework\View\Element\Template")->setTemplate("Contestio_Connect::error_500.phtml")->toHtml();
+	return;
+} elseif ($authfailed) {
+	echo $this->getLayout()->createBlock("Magento\Framework\View\Element\Template")->setTemplate("Contestio_Connect::error_401.phtml")->toHtml();
+	return;
+} elseif ($notfound) {
+	echo $this->getLayout()->createBlock("Magento\Framework\View\Element\Template")->setTemplate("Contestio_Connect::error_404.phtml")->toHtml();
+	return;
+}
+?>
+
+<script type="text/javascript">
+	// Define variables for file web/js/concours_page.js
+	const isLogged = <?php echo $isloggedin ? 'true' : 'false'; ?>;
+	const userIdToCheck = <?php echo $userIdToCheck ?>;
+	const socialshareUrl = '<?php echo $block->getUrl('contestio/ajax/socialshare') ?>';
+	const linkId = '<?php echo $block->getConfigValue('contest_button_settings/contest_button_settings_group/link_id') ?>';
+</script>
+
+<script src="<?php echo $block->getViewFileUrl('Contestio_Connect::js/concours_page.js'); ?>"></script>
+
+<div class="contestio-main-container">
+	<div class="contestio_overlay hidden">
+		<!-- Delete my participation -->
+		<aside id="dialogDelete" class="hidden">
+			<button type="button" aria-label="close" class="closeDeleteDialog x">❌</button>
+			<h2>Suppression</h2>
+			
+			<p>
+				Vous êtes sur le point de supprimer votre participation au concours.
+				<br>
+				Voulez-vous continuer ?
+			</p>
+
+			<p class="response"></p>
+
+			<footer>
+				<button class="cancel closeDeleteDialog">
+					Fermer
+				</button>
+
+				<button
+					id="deleteButton"
+					class="confirm"
+					data-contest=""
+				>
+					Oui, supprimer
+				</button>
+			</footer>
+		</aside>
+
+		<!-- Custom sort -->
+		<aside id="dialogOrderby" class="hidden">
+			<button type="button" aria-label="close" class="closeOrderBy x">❌</button>
+			<h2>Trier par</h2>
+
+			<form id="sortForm">
+				<div class="survey_answers">
+					<div class="answer">
+						<input
+							type="radio"
+							id="populars"
+							name="sortBy"
+							value="populars"
+							<?php echo $sortBy === 'likes' && $orderBy === 'desc' ? 'checked' : ''; ?>
+						>
+						<label for="populars">Les plus populaires</label>
+					</div>
+
+					<div class="answer">
+						<input
+							type="radio"
+							id="unpopulars"
+							name="sortBy"
+							value="unpopulars"
+							<?php echo $sortBy === 'likes' && $orderBy === 'asc' ? 'checked' : ''; ?>
+						>
+						<label for="unpopulars">Les moins populaires</label>
+					</div>
+
+					<div class="answer">
+						<input
+							type="radio"
+							id="recents"
+							name="sortBy"
+							value="recents"
+							<?php echo $sortBy === 'createdAt' && $orderBy === 'desc' ? 'checked' : ''; ?>
+						/>
+						<label for="recents">Les plus récents</label>
+					</div>
+
+					<div class="answer">
+						<input
+							type="radio"
+							id="oldest"
+							name="sortBy"
+							value="oldest"
+							<?php echo $sortBy === 'createdAt' && $orderBy === 'asc' ? 'checked' : ''; ?>
+						/>
+						<label for="oldest">Les plus anciens</label>
+					</div>
+				</div>
+			</form>
+		
+			<footer>
+				<button
+					id="newSort"
+					class="confirm success"
+				>
+					Appliquer
+				</button>
+			</footer>
+		</aside>
+
+		<!-- View participation -->
+		<aside id="dialogParticipation" class="participation twoPart hidden">
+			<button aria-label="close" class="closeModalParticipation x">❌</button>
+
+			<div class="firstPart">
+				<img class='postImage partImage' src="" alt="Participation">
+			</div>
+
+			<form class="secondPart" id="participationForm">
+				<div class="full-width">
+					<h2>Participation de <strong class="postUser"></strong></h2>
+					
+					<p class="postDescription"></p>
+				</div>
+
+				<input type="hidden" class="participationId" name="participationId" value="">
+				<input type="hidden" class="contestId" name="contestId" value="">
+
+				<div class="contestio_dialog_body">
+					<div class="actions_div">
+						<div class="likes">
+							<img
+								class="canLike"
+								id="likeImg"
+								width="30"
+								height="30"
+								src=""
+								alt="Likes"
+								data-filled="<?php echo $this->getViewFileUrl('Contestio_Connect::images/heart.png'); ?>"
+								data-empty="<?php echo $this->getViewFileUrl('Contestio_Connect::images/heart-nofill.png'); ?>"
+							/>
+							<span class="postLikes"></span>
+						</div>
+
+						<div class="rank">
+							<span class="postRank"></span>
+							<img
+								id="rankImg"
+								width="30"
+								height="30"
+								src="<?php echo $this->getViewFileUrl('Contestio_Connect::images/podium.png'); ?>"
+								alt="Classement"
+								data-podium="<?php echo $this->getViewFileUrl('Contestio_Connect::images/podium.png'); ?>"
+								data-gold="<?php echo $this->getViewFileUrl('Contestio_Connect::images/medal_gold.webp'); ?>"
+								data-silver="<?php echo $this->getViewFileUrl('Contestio_Connect::images/medal_silver.webp'); ?>"
+								data-bronze="<?php echo $this->getViewFileUrl('Contestio_Connect::images/medal_bronze.webp'); ?>"
+							/>
+						</div>
+					</div>
+						
+					<button type="submit">
+						<span><?= $block->escapeHtml(__('Voter')) ?></span>
+					</button>
+
+					<p class="response"></p>
+
+					<p class="time-left-msg timeLeft hidden">
+						Prochain vote dans <span class="time-left"></span>
+					</p>
+
+					<p class="time-left-msg votedTodayMsg hidden">
+						Vous avez déjà voté aujourd'hui, prochain vote dans <span class="time-left"></span>
+					</p>
+				</div>
+
+				<footer>
+					<ul class="socials_links" data-objectid="">
+						<li class="fb-link">
+							<a
+								class="facebook"
+								title="facebook"
+								href="#"
+								target="_blank"
+							>
+								<img width="30" height="30" src="<?php echo $this->getViewFileUrl('Contestio_Connect::images/share-facebook.svg'); ?>" alt="Facebook" />
+							</a>
+						</li>
+
+						<li class="messenger-link">
+							<a
+								class="messenger"
+								title="messenger"
+								href="#"
+								target="_blank"
+							>
+								<img width="30" height="30" src="<?php echo $this->getViewFileUrl('Contestio_Connect::images/share-messenger.svg'); ?>" alt="Messenger" />
+							</a>
+						</li>
+
+						<li class="twitter-link">
+							<a
+								class="twitter"
+								title="twitter"
+								href="#"
+								target="_blank"
+							>
+								<img width="30" height="30" src="<?php echo $this->getViewFileUrl('Contestio_Connect::images/share-twitter.svg'); ?>" alt="X" />
+							</a>
+						</li>
+
+						<li class="copy-link">
+							<a
+								href="#"
+								title="clipboard"
+								class='copybutton'
+							>
+								<img width="30" height="30" src="<?php echo $this->getViewFileUrl('Contestio_Connect::images/copy-code.svg'); ?>" alt="Clipboard" />
+							</a>
+						</li>
+					</ul>
+
+					<div class="flag_button">
+						<button class="report-link transparent" type="button">
+							<img width="30" height="30" src="<?php echo $this->getViewFileUrl('Contestio_Connect::images/report-flag.svg'); ?>" alt="" />
+						</button>
+					</div>
+				</footer>
+			</form>
+		</aside>
+
+		<!-- Form to participate -->
+		<aside id="dialogParticipForm" class="participation twoPart hidden">
+			<button aria-label="close" class="closeModalParticipForm x">❌</button>
+
+			<div class="firstPart">
+				<div class="selectImg">
+					<img src="<?php echo $this->getViewFileUrl('Contestio_Connect::images/upload.svg'); ?>" alt="Select image">
+
+					<p>
+						Choisir une image
+					</p>
+				</div>
+
+				<div class="loading_part hidden">
+					<!-- Loader part -->
+					<span class="loader"></span>
+
+					<!-- text -->
+					<p class="loading_text">
+						<span class="title">Téléchargement en cours... </span>
+						<span class="progress">0 %</span>
+					</p>
+				</div>
+
+				<!-- Crop part : select a part of image -->
+				<div class="crop_part hidden">
+					<div id="canvas_container" class="canvas_container">
+						<canvas id="imageCanvas"></canvas>
+						<div id="cropArea" class="crop-area hidden">
+								<div class="resize-handle nw"></div>
+								<div class="resize-handle ne"></div>
+								<div class="resize-handle sw"></div>
+								<div class="resize-handle se"></div>
+						</div>
+
+						<button id="deleteImage">❌</button>
+					</div>
+
+					<img id="croppedImage" class="hidden" />
+				</div>
+
+				<img
+					class='placeholderImage'
+					src="<?php echo $placeholderImage ?>"
+					alt="Placeholder"
+				>
+			</div>
+
+			<form id="newParticipForm" class="secondPart">
+				<h2>Nouvelle participation</h2>
+
+				<p>
+					Inscription au concours au nom de <strong><?= $handle ?></strong>.
+				</p>
+
+				<input
+					type="file"
+					id="participFile"
+					name="participFile"
+					accept=".png, .jpg, .jpeg, .webp, .heic"
+					class="hidden"
+				>
+				<input type="hidden" class="contestId" name="contestId" value="">
+
+				<div class="full-width">
+					<textarea
+						name="description"
+						id="description"
+						placeholder="Description de votre participation"
+						maxlength="200"
+					></textarea>
+					<p>
+						<span class="descriptionLength">0</span> / 200
+					</p>
+				</div>
+
+				<p class="response"></p>
+
+				<div class="contestio_dialog_body">							
+					<button type="submit" class="mb-0">
+						<span><?= $block->escapeHtml(__('Participer')) ?></span>
+					</button>
+				</div>
+
+				<p class="light">
+					En participant, vous acceptez le <a href="#" target="_blank">règlement du concours</a>.
+				</p>
+			</form>
+		</aside>
+
+		<!-- Update my participation -->
+		<aside id="dialogParticipUpdate" class="participation twoPart hidden">
+			<button aria-label="close" class="closeModalParticipUpdate x">❌</button>
+
+			<!-- <div class="main_sep"> -->
+				<div class="firstPart">
+					<img
+						class='postImage partImage'
+						src=""
+						alt="Participation"
+					>
+				</div>
+
+				<form class="secondPart" id="updateParticipForm">
+					<div class="full-width">
+
+						<h2>Modifier ma participation</h2>
+						
+						<p>
+							Vous pouvez modifier votre participation au concours ou <a href="#" id="deleteParticip">la supprimer</a> .
+						</p>
+					</div>
+
+					<input type="hidden" class="contestId" name="contestId" value="">
+
+					<div class="full-width">
+						<textarea
+							name="description"
+							placeholder="Description de votre participation"
+							maxlength="200"
+						></textarea>
+						<p>
+							<span class="descriptionLength">0</span> / 200
+						</p>
+					</div>
+
+					<p class="response"></p>
+
+					<div class="contestio_dialog_body">							
+						<button type="submit">
+							<span><?= $block->escapeHtml(__('Mettre à jour')) ?></span>
+						</button>
+					</div>
+				</form>
+
+			<!-- </div> -->
+		</aside>
+
+		<?php echo $this->getLayout()->createBlock("Magento\Framework\View\Element\Template")->setTemplate("Contestio_Connect::login_form.phtml")->toHtml() ?>
+	</div>
+
+	<!-- Navbar with custom buttons -->
+	<div class="contestio-header contestio-btn-section">
+		<p id="contestio-header-text">
+			<?php if ($handle): ?>
+				Bonjour <span><?= $handle ?></span> 👋
+			<?php endif; ?>
+		</p>
+
+		<ul>
+			<?php foreach ($navButtons as $button) : ?>
+				<!-- Print custom button styles -->
+				<style>
+					/* Default */
+					<?php if (isset($button['styles'])): ?>
+						a#<?= $button['slug'] ?> {
+							<?php echo $button['styles']; ?>
+						}
+					<?php endif; ?>
+
+					/* Hover */
+					<?php if (isset($button['hover'])): ?>
+						a#<?= $button['slug'] ?>:hover,
+						a#<?= $button['slug'] ?>.active {
+							<?php echo $button['hover']; ?>
+						}
+					<?php endif; ?>
+
+					/* Focus and active */
+					<?php if (isset($button['focus'])): ?>
+						a#<?= $button['slug'] ?>:focus,
+						a#<?= $button['slug'] ?>:active {
+							<?php echo $button['focus']; ?>
+						}
+					<?php endif; ?>
+				</style>
+
+				<?php
+					$url = $this->getUrl('contestio/accueil');
+					$isActive = strpos($currentPageUrl, $this->getUrl('contestio/accueil')) === 0;
+
+					// Détermine l'URL à utiliser
+					if ($button['navUrl'] === 'contest') {
+						$url = $this->getUrl('contestio/concours');
+						$isActive = strpos($currentPageUrl, $this->getUrl('contestio/concours')) === 0;
+					} elseif ($button['navUrl'] === 'survey') {
+						$url = $this->getUrl('contestio/sondage');
+						$isActive = strpos($currentPageUrl, $this->getUrl('contestio/sondage')) === 0;
+					}
+				?>
+
+				<a
+					id="<?= $button['slug'] ?>"
+					href="<?= $url ?>"
+					class="basic-button <?= $isActive ? 'active' : '' ?>"
+				>
+					<?= $button['text'] ?>
+				</a>
+			<?php endforeach; ?>
+		</ul>
+	</div>
+	<!-- / Navbar with custom buttons -->
+
+	<!-- Main content -->
+  <div class="contestio-main-content gap-top-35">
+		<?php foreach ($contestData as $row): ?>
+			<?php if(isset($row['type'])): ?>
+
+				<!-- Print banner -->
+				<?php if($row['type'] == 'banner'): ?>
+					<div class="contestio-section gap-44">
+						<div class="contestio-row contestio-align-items-center">
+							<!-- Name and description -->
+							<div class="contestio-col-8">
+								<?php if(isset($row['name'])): ?>
+									<h2 class="contestio-heading">
+										<?= $row['name'] ?>
+									</h2>
+								<?php endif; ?>
+
+								<div class="contestio-text-box">
+									<?php if(isset($row['description'])): ?>
+										<p><?= $row['description'] ?></p>
+									<?php endif;?>
+								</div>
+							</div>
+							<!-- / Name and description -->
+
+							<!-- Image -->
+							<div class="contestio-col-4">
+								<div class="contestio-img-box">
+									<?php if(isset($row['presignedUrl'])): ?>
+										<img src="<?php echo $row['presignedUrl']; ?>" alt="" />
+									<?php endif; ?>
+								</div>
+							</div>
+							<!-- / Image -->
+						</div>
+					</div>
+					<hr class="contestio-hr" />
+				<!-- / Print banner -->
+
+				<!-- Print contest -->
+				<?php elseif($row['type'] === 'contest'): ?>
+					<?php 
+						$contestIdToCheck = $row['_id'];
+						$contestData = $block->fetchContentDataById($contestIdToCheck, $sortBy, $orderBy);
+						$participantsByContest = [];
+						$participantsDataByContest = [];					
+						$contestId = $contestData['_id'];
+					?>
+
+						<!-- Contest presentation -->
+						<div class="contestio-section gap-44">
+							<div class="contestio-row">
+								<div class="contestio-col-12">
+									<!-- Contest title -->
+									<?php if(isset($row['name'])): ?>
+										<h2 class="contestio-heading">
+											<?= $row['name'] ?>
+										</h2>
+									<?php endif; ?>
+
+									<!-- Contest description -->
+									<div class="contestio-text-box">
+										<?php if(isset($row['description'])): ?>
+											<p>
+												<?= $row['description'] ?>
+											</p>
+										<?php endif;?>
+									</div>
+
+									<?php if (!isset($contestData['myParticipation'])): ?>
+										<?php $button = isset($contestData['buttonParticipate']) ? $contestData['buttonParticipate'] : null; ?>
+										
+										<!-- Button to participate to contest -->
+										<div class="contestio-btn-section mt-1">
+											<!-- Print custom button -->
+											<?php if ($button !== null): ?>
+												<!-- Print custom button styles -->
+												<style>
+													/* Default */
+													<?php if (isset($button['styles'])): ?>
+														button#participButton {
+															<?php echo $button['styles']; ?>
+														}
+													<?php endif; ?>
+
+													/* Hover */
+													<?php if (isset($button['hover'])): ?>
+														button#participButton:hover {
+															<?php echo $button['hover']; ?>
+														}
+													<?php endif; ?>
+
+													/* Focus and active */
+													<?php if (isset($button['focus'])): ?>
+														button#participButton:focus,
+														button#participButton:active {
+															<?php echo $button['focus']; ?>
+														}
+													<?php endif; ?>
+												</style>
+
+												<button
+													id="participButton"
+													class="basic-button"
+													contestId='<?= $row['_id'] ?>'
+												>
+													<?= $button['text'] ?>
+												</button>
+											<?php endif; ?>
+										</div>
+									<?php endif; ?>
+								</div>
+							</div>
+						</div>
+						<!-- / Contest presentation -->
+
+						<?php if ($isloggedin && isset($contestData['myParticipation'])) : ?>
+							<?php
+								$myPart = $contestData['myParticipation'];
+								$myPart['shareUrl'] = $pageUrl . "?participationId=" . $myPart['_id'];
+							?>
+
+							<div class="contest_preview participation twoPart">
+								<div class="firstPart">
+									<img
+										class='postImage partImage'
+										src="<?php echo $myPart['presignedUrl'] ?>"
+										alt="Participation"
+									>
+								</div>
+
+								<div class="secondPart">
+									<div class="full-width">
+										<h2>
+											Ma participation (<strong class="postUser"><?= $myPart['pseudo'] ?? "nc" ?></strong>)
+										</h2>
+
+										<?php if ($myPart['isActive'] === false): ?>
+											<p class="danger">
+												Votre participation a été signalée, voici son statut :
+												<i>
+													<?php echo isset($myPart['moderationStatus']) ? $myPart['moderationStatus'] : "En attente de modération"; ?>
+												</i>
+											</p>
+										<?php endif; ?>
+
+										<p class="postDescription">
+											<?= $myPart['description'] && !empty($myPart['description']) ? $myPart['description'] : "<i>Aucune description</i>" ?>
+										</p>
+									</div>
+
+									<?php if ($myPart['isActive'] === true): ?>
+										<div class="contestio_dialog_body">
+											<div class="actions_div">
+												<div class="likes">
+													<img
+														class="canLike"
+														width="30"
+														height="30"
+														src="<?php echo $this->getViewFileUrl('Contestio_Connect::images/heart.png'); ?>"
+														alt="Likes"
+													/>
+													<span class="postLikes">
+														<?= $myPart['likes'] ?? "nc" ?>
+													</span>
+												</div>
+						
+												<div class="rank">
+													<span class="postRank">
+														<?= $myPart['rank'] ?? "nc" ?>
+													</span>
+
+													<?php
+														$rankImage = $myPart['rank'] === 1 ? 'medal_gold.webp' : ($myPart['rank'] === 2 ? 'medal_silver.webp' : ($myPart['rank'] === 3 ? 'medal_bronze.webp' : 'podium.png'));
+													?>
+
+													<img
+														width="30"
+														height="30"
+														src="<?php echo $this->getViewFileUrl('Contestio_Connect::images/'.$rankImage); ?>"
+														alt="Classement"
+													/>
+												</div>
+											</div>
+
+											<button
+												type="submit"
+												id="openParticipUpdate"
+												data-image="<?= $myPart['presignedUrl'] ?>"
+												data-description="<?= htmlspecialchars($myPart['description'], ENT_QUOTES, 'UTF-8'); ?>"
+												data-contest="<?= $contestId ?>"
+											>
+												<span><?= $block->escapeHtml(__('Modifier')) ?></span>
+											</button>
+										</div>
+
+										<footer class="centered">
+											<ul class="socials_links" data-objectid="<?= $myPart['_id'] ?>">
+												<li class="fb-link">
+													<a
+														class="facebook"
+														title="facebook"
+														href="https://www.facebook.com/sharer/sharer.php?u=<?= $myPart['shareUrl'] ?>"
+														target="_blank"
+													>
+														<img width="30" height="30" src="<?php echo $this->getViewFileUrl('Contestio_Connect::images/share-facebook.svg'); ?>" alt="" />
+													</a>
+												</li>
+												<li class="messenger-link">
+													<a
+														class="messenger"
+														title="messenger"
+														href="fb-messenger://share/?link=<?= $myPart['shareUrl'] ?>"
+														target="_blank"
+													>
+														<img width="30" height="30" src="<?php echo $this->getViewFileUrl('Contestio_Connect::images/share-messenger.svg'); ?>" alt="" />
+													</a>
+												</li>
+												<li class="twitter-link">
+													<a
+														class="twitter"
+														title="twitter"
+														href="https://twitter.com/intent/tweet?url=<?= $myPart['shareUrl'] ?>"
+														target="_blank"
+													>
+														<img width="30" height="30" src="<?php echo $this->getViewFileUrl('Contestio_Connect::images/share-twitter.svg'); ?>" alt="" />
+													</a>
+												</li>
+												<li class="copy-link">
+													<a
+														href="#"
+														title="clipboard"
+														class='copybutton'
+														data-participation="<?= $myPart['_id'] ?>"
+													>
+													<img width="30" height="30" src="<?php echo $this->getViewFileUrl('Contestio_Connect::images/copy-code.svg'); ?>" alt="" />
+												</a>
+												</li>
+											</ul>
+										</footer>
+									<?php endif; ?>
+								</div>
+							</div>
+						<?php endif; ?>
+						
+						<!-- Participations list container -->
+						<div class="contestio-section competition-items-section gap-bottom-none">
+							<!-- Participations list header -->
+							<?php if(!empty($contestData['participations'])): ?>
+								<div class="sortby-section">
+									<span>
+										<?php echo isset($contestData['totalParticipations']) ? $contestData['totalParticipations'] . ' participations' : ''; ?>
+									</span>
+
+									<a href="#" id="openOrderByDialog">
+										Trier
+										<img
+											src="<?php echo $block->getViewFileUrl('Contestio_Connect::images/sortBy.png'); ?>"
+											alt="Order by"
+											height="15"
+											width="20"
+										/>
+									</a>
+								</div>
+							<?php endif; ?>
+							<!-- / Participations list header -->
+
+							<!-- Participations grid -->
+							<div class="competition-wrapper <?php echo isset($row['profileImageView']) ? strtolower($row['profileImageView']) : '' ?>">
+								<?php $i = 0; ?>
+								<?php foreach ($contestData['participations'] as $participant): ?>
+									<?php $i++; ?>
+
+									<!-- Stop at 6 items -->
+									<?php if (!$isloggedin && $i > 6) break; ?>
+
+									<!-- Participation item -->
+									<div
+										class="competition-item"
+										data-user="<?= $participant['pseudo'] ?>"
+										data-participation="<?= $participant['_id'] ?>"
+										data-contest="<?= $contestId ?>"
+										data-likes="<?= $participant['likes'] ?>"
+										data-description="<?= htmlspecialchars($participant['description'], ENT_QUOTES, 'UTF-8'); ?>"
+										data-image="<?= $participant['presignedUrl'] ?>"
+										data-liked="<?php echo !!$participant['liked']; ?>"
+										data-shareurl="<?= $pageUrl ?>"
+										data-rank="<?= $participant['rank'] ?>"
+										data-facebook="https://www.facebook.com/sharer/sharer.php?u=<?php echo urlencode($pageUrl); ?>"
+										data-messenger="fb-messenger://share/?link=<?php echo urlencode($pageUrl); ?>"
+										data-twitter="https://twitter.com/intent/tweet?url=<?php echo urlencode($pageUrl); ?>"
+										data-voted-today="<?php echo isset($contestData['votedToday']) && $contestData['votedToday'] ? 'true' : 'false'; ?>"
+									>
+										<!-- Participation item body -->
+										<div class="competition-item-photo">
+											<div class="rank">
+												<?php if ($participant['rank'] <= 3): ?>
+													<?php $podium = $participant['rank'] === 1 ? 'medal_gold.webp' : ($participant['rank'] === 2 ? 'medal_silver.webp' : ($participant['rank'] === 3 ? 'medal_bronze.webp' : 'podium.png')); ?>
+												
+													<img
+														width="30"
+														height="30"
+														src="<?php echo $this->getViewFileUrl('Contestio_Connect::images/'.$podium); ?>"
+														alt="Classement"
+													/>
+												<?php else: ?>
+													<span>
+														<span class="rankLevel">
+															<?php echo $participant['rank']; ?>
+														</span>
+
+														<?php echo isset($contestData['totalParticipations']) ? '/ ' . $contestData['totalParticipations'] : 'ème'; ?>
+													</span>
+												<?php endif; ?>
+											</div>
+
+											<?php if(isset($participant['presignedUrl'])): ?>
+												<img src="<?php echo $participant['presignedUrl']; ?>" alt="<?php $participant['pseudo'] ?>" />
+											<?php else: ?>
+												<img src="<?php echo $placeholderImage; ?>" alt="" />
+											<?php endif; ?>
+										</div>
+										<!-- / Participation item body -->
+
+										<!-- Participation item footer -->
+										<div class="competition-item-footer">
+											<div class="head">
+												<p class="pseudo">
+													<?= $participant['pseudo'] ?>
+												</p>
+
+												<div class="likeCount">
+													<img
+														width="20"
+														height="20"
+														src="<?php echo $this->getViewFileUrl(
+															$participant['liked']
+															? 'Contestio_Connect::images/heart.png'
+															: 'Contestio_Connect::images/heart-nofill.png'
+														); ?>"
+														alt="Likes"
+													/>
+
+													<span>
+														<?php echo $participant['likes']; ?>
+													</span>
+												</div>
+											</div>
+
+											<p class="description">
+												<?= htmlspecialchars($participant['description'], ENT_QUOTES, 'UTF-8'); ?>
+											</p>
+										</div>
+										<!-- / Participation item footer -->
+									</div>
+									<!-- / Participation item -->
+								<?php endforeach; ?>
+							</div>
+							<!-- / Participations grid -->
+
+							<!-- If user is not logged in, display only 6 participations -->
+							<?php if (!$isloggedin && $i === 7): ?>
+								<div class="contestio-btn-section openDialogLoginContainer">
+									<button class="fill-link openDialogLogin">
+										Connectez-vous pour en voir plus
+									</button>
+								</div>
+
+								<?php break; // Stop displaying participations ?>
+							<?php endif; ?>
+							<!-- / If user is not logged in, display only 6 participations -->
+						</div>
+						<!-- / Participations list container -->
+				<?php endif; ?>
+				<!-- / Print contest -->
+			<?php endif; // End banner and contest ?>
+		<?php endforeach; ?>
+  </div>
+
+	<?php echo $this->getLayout()->createBlock("Magento\Framework\View\Element\Template")->setTemplate("Contestio_Connect::footer.phtml")->toHtml() ?>
+</div>
+
+<script>
+require(['jquery'], function($) {
+	// Init scroll position
+	let lastScrollTop = 0;
+
+	// ! See participation modal
+	// Close Modal for participation
+	$('.closeModalParticipation').click(function(){
+    // Hide modal and overlay
+    $('#dialogParticipation').addClass('hidden');
+    $('.contestio_overlay').addClass('hidden');
+
+    // Remove class from main container
+    $('.contestio-main-container').removeClass('contestio_overlay_open');
+
+		console.log('lastScrollTop', lastScrollTop);
+
+    // Scroll to the last scroll position
+    $(window).scrollTop(lastScrollTop);
+
+		// Check if the class 'reload' is present
+		if ($('#dialogParticipation').hasClass('reload')) {
+			// Reload the page
+			location.reload();
+		}
+  });
+	$('.closeModalParticipForm').click(function(){
+		// Reset form
+		$('#dialogParticipForm textarea').val('');
+
+		// Reset form input file
+		$('#participFile').val('');
+
+		// Hide cropper image
+		$('#croppedImage').addClass('hidden');
+		$('#dialogParticipForm .canvas_container').removeClass('hidden');
+
+		// Show placeholder image
+		$('#dialogParticipForm .placeholderImage').removeClass('hidden');
+
+		// Hide loading part
+		$('#dialogParticipForm').find('.loading_part, .crop_part').addClass('hidden');
+		$('#dialogParticipForm').find('.selectImg').removeClass('hidden');
+
+    // Hide modal and overlay
+    $('#dialogParticipForm').addClass('hidden');
+    $('.contestio_overlay').addClass('hidden');
+
+    // Remove class from main container
+    $('.contestio-main-container').removeClass('contestio_overlay_open');
+
+		// Check if the class 'reload' is present
+		if ($('#dialogParticipForm').hasClass('reload')) {
+			// Reload the page
+			location.reload();
+		}
+
+    // Scroll to the last scroll position
+    $(window).scrollTop(lastScrollTop);
+  });
+	$('.closeModalParticipUpdate').click(function(){
+    // Hide modal and overlay
+    $('#dialogParticipUpdate').addClass('hidden');
+    $('.contestio_overlay').addClass('hidden');
+
+    // Remove class from main container
+    $('.contestio-main-container').removeClass('contestio_overlay_open');
+
+		// Check if the class 'reload' is present
+		if ($('#dialogParticipUpdate').hasClass('reload')) {
+			// Reload the page
+			location.reload();
+		}
+
+    // Scroll to the last scroll position
+    $(window).scrollTop(lastScrollTop);
+  });
+	$('.closeDeleteDialog').click(function(){
+    // Hide modal 
+    $('#dialogDelete').addClass('hidden');
+
+    // Show the participation dialog
+    $('#dialogParticipUpdate').removeClass('hidden');
+
+		// Check if the class 'reload' is present
+		if ($('#dialogDelete').hasClass('reload')) {
+			// Reload the page
+			location.reload();
+		}
+  });
+	$('.closeOrderBy').click(function(){
+    // Hide modal and overlay
+    $('#dialogOrderby').addClass('hidden');
+		$('.contestio_overlay').addClass('hidden');
+
+		// Remove class from main container
+		$('.contestio-main-container').removeClass('contestio_overlay_open');
+
+		// Scroll to the last scroll position
+    $(window).scrollTop(lastScrollTop);
+  });
+
+	// Open login modal
+	$('.openDialogLogin').click(function() {
+		// Show login modal
+		$('#dialogLogin').removeClass('hidden');
+		$('.contestio_overlay').removeClass('hidden');
+
+		lastScrollTop = $(window).scrollTop();
+
+		$('#dialogLogin').attr('data-scrollto', lastScrollTop);
+
+		// Add class from main container
+		$('.contestio-main-container').addClass('contestio_overlay_open');
+	});
+
+	// Open participation modal on participation click (item)
+	$(document).on('click', '.competition-item', function(e) {
+		e.preventDefault();
+		
+		const compUser = $(this).attr('data-user');
+		const compDesc = $(this).attr('data-description');
+		const compImgUrl = $(this).attr('data-image');
+		const contestid = $(this).attr('data-contest');
+		const participationid = $(this).attr('data-participation');
+		const shareUrl = $(this).attr('data-shareurl');
+		const complikeCount = $(this).attr('data-likes');
+		const compRank = $(this).attr('data-rank');
+		const fblink = $(this).attr('data-facebook');
+		const messenger = $(this).attr('data-messenger');
+		const twlink = $(this).attr('data-twitter');
+		const votedToday = $(this).attr('data-voted-today') === 'true';
+
+		const isLiked = $(this).attr('data-liked') === '1';
+
+		// Update dialog infos
+		const dialog = document.getElementById('dialogParticipation');
+
+		dialog.querySelector('.postImage').src = compImgUrl;
+		dialog.querySelector('.postUser').innerHTML = compUser;
+		dialog.querySelector('.postDescription').innerHTML = compDesc;
+		dialog.querySelector('.postLikes').innerHTML = complikeCount;
+		dialog.querySelector('.postRank').innerHTML = ''; // Reset
+		dialog.querySelector('.postRank').append(compRank + ' ' + (compRank === '1' ? 'er' : 'ème'));
+		dialog.querySelector('.report-link').setAttribute('data-user', compUser);
+		dialog.querySelector('.report-link').setAttribute('data-participation', participationid);
+		dialog.querySelector('.report-link').setAttribute('data-contest', contestid);
+		
+		// Update #rankImg
+		const rankImg = dialog.querySelector('#rankImg');
+		if (compRank === '1') {
+			rankImg.src = rankImg.getAttribute('data-gold');
+		} else if (compRank === '2') {
+			rankImg.src = rankImg.getAttribute('data-silver');
+		} else if (compRank === '3') {
+			rankImg.src = rankImg.getAttribute('data-bronze');
+		} else {
+			rankImg.src = rankImg.getAttribute('data-podium');
+		}
+
+		// Reset #likeImg to empty heart
+		const likeImg = dialog.querySelector('#likeImg');
+		likeImg.setAttribute('src', likeImg.getAttribute('data-empty'));
+		
+		// Add canLike class if not exists
+		if (!likeImg.classList.contains('canLike')) {
+			likeImg.classList.add('canLike');
+		}
+
+		// Media share
+		dialog.querySelector('.facebook').href = fblink;
+		dialog.querySelector('.messenger').href = messenger;
+		dialog.querySelector('.twitter').href = twlink;
+		dialog.querySelector('.copybutton').setAttribute('data-participation', participationid);
+		dialog.querySelector('footer ul').setAttribute('data-objectid', participationid);
+
+		// Participation form (hidden fields)
+		dialog.querySelector('.participationId').value = participationid;
+		dialog.querySelector('.contestId').value = contestid;
+
+		// Enable the button for voting
+		$(document).find('#dialogParticipation button[type="submit"]').prop('disabled', false);
+		$(document).find('#dialogParticipation button[type="submit"]').text('Voter');
+
+		if (votedToday && !isLiked) {
+			// Disable the button
+			$(document).find('#dialogParticipation button[type="submit"]').prop('disabled', true);
+			$(document).find('#dialogParticipation .votedTodayMsg').removeClass('hidden');
+		} else {
+			// Enable the button
+			$(document).find('#dialogParticipation button[type="submit"]').prop('disabled', false);
+			$(document).find('#dialogParticipation .votedTodayMsg').addClass('hidden');
+		}
+
+		// If the post is already liked
+		if (isLiked) {
+			// Update heart icon
+			likeImg.setAttribute('src', likeImg.getAttribute('data-filled'));
+
+			// Remove canLike class
+			likeImg.classList.remove('canLike');
+
+			// Disable the button
+			$(document).find('#dialogParticipation button[type="submit"]').prop('disabled', true).text('Vote ajouté');
+		}
+
+		// Update last scroll position
+		lastScrollTop = $(window).scrollTop();
+
+		// Scroll top if mobile
+		if (window.innerWidth < 768) {
+			window.scrollTo(0, 0);
+		}
+
+		// Show modal and overlay
+		$('#dialogParticipation').removeClass('hidden');
+		$('.contestio_overlay').removeClass('hidden');
+
+		// Add class from main container
+		$('.contestio-main-container').addClass('contestio_overlay_open');
+	});
+
+	// Open form to participate on button 'Participer au concours' click
+	$(document).on('click', '#participButton', function(e) {
+		e.preventDefault();
+
+		// Show overlays
+		$('.contestio_overlay').removeClass('hidden');
+
+		// Add class from main container
+		$('.contestio-main-container').addClass('contestio_overlay_open');
+
+		// Update last scroll position
+		lastScrollTop = $(window).scrollTop();
+
+		// Scroll top if mobile
+		if (window.innerWidth < 768) {
+			window.scrollTo(0, 0);
+		}
+
+		<?php if(!$userIdToCheck): ?>
+			// Add lastScrollTop to the login modal data-scroll
+			$(document).find('#dialogLogin').attr('data-scrollto', lastScrollTop);
+			$(document).find('#dialogLogin').removeClass('hidden');
+			return false;
+		<?php elseif(!$handle): ?>
+			// If user is logged but no pseudo, show the pseudo form
+			$('#dialogPseudo').find('.firstName').html('<?= $firstname ?>');
+			$('#dialogPseudo').removeClass('hidden');
+			return false;
+		<?php endif; ?>
+
+		// Update .contestId value
+		$('#dialogParticipForm').find('.contestId').val($(this).attr('contestid'));
+
+		// Show participation form
+		$('#dialogParticipForm').removeClass('hidden');
+
+		// Show .full-width div
+		$('#dialogParticipForm .full-width').removeClass('hidden');
+
+		// Update last scroll position
+		lastScrollTop = $(window).scrollTop();
+
+		// Scroll top if mobile
+		if (window.innerWidth < 768) {
+			window.scrollTo(0, 0);
+		}
+	});
+	
+	// Submit the like form
+	$(document).on("submit", '#participationForm', function(e) {
+		e.preventDefault();
+
+		// Scroll top if mobile
+		if (window.innerWidth < 768) {
+			window.scrollTo(0, 0);
+		}
+
+		<?php if(!$userIdToCheck): ?>
+			// Hide participation form
+			$('#dialogParticipation').addClass('hidden');
+
+			// Add lastScrollTop to the login modal data-scroll
+			$(document).find('#dialogLogin').attr('data-scrollto', lastScrollTop);
+			$(document).find('#dialogLogin').removeClass('hidden');
+			return false;
+		<?php elseif(!$handle): ?>
+			// Hide participation form
+			$('#dialogParticipation').addClass('hidden');
+
+			// If user is logged but no pseudo, show the pseudo form
+			$('#dialogPseudo').find('.firstName').html('<?= $firstname ?>');
+			$('#dialogPseudo').removeClass('hidden');
+			return false;
+		<?php endif; ?>
+
+		$('body').trigger('processStart');
+
+		const addvoteUrl = "<?php echo $block->getUrl('contestio/ajax/addlike') ?>";
+		const formData = $(this).serialize();
+
+		$.ajax({
+			type: "POST",
+			url: addvoteUrl,
+			data: formData,
+			dataType: "json",
+			success: function(data) {
+				$(document).find('#dialogParticipation').addClass('reload');
+				$('body').trigger('processStop');
+
+				if(data.success === 'true') {
+					const currentValue = parseInt($(document).find('#dialogParticipation .postLikes').text());
+
+					// Show the time left
+					$(document).find('#dialogParticipation .timeLeft').removeClass('hidden');
+					// Disable the button
+					$(document).find('#dialogParticipation button[type="submit"]').prop('disabled', true);
+
+					// Remove canLike class
+					likeImg.classList.remove('canLike');
+
+					if(data.status == 400) {
+						$(document).find('#dialogParticipation .response').html('<b class="error">'+data.message+'</b>');
+					} else {
+						$(document).find('#dialogParticipation button[type="submit"]').text('Vote ajouté');
+
+						// Update heart icon
+						const likeImg = $('#dialogParticipation #likeImg')[0];
+						likeImg.setAttribute('src', likeImg.getAttribute('data-filled'));
+
+						// Remove canLike class
+						likeImg.classList.remove('canLike');
+
+						// Update the like count
+						$(document).find('#dialogParticipation .postLikes').text(currentValue + 1);
+
+						// Disable the button
+						$(document).find('#dialogParticipation button[type="submit"]').prop('disabled', true);
+					}
+				} else {
+					$(document).find('#dialogParticipation .response').html("<b class='error'>Nous rencontrons un problème, veuillez réessayer plus tard.</b>");
+				}
+			},
+			error: function(error) {
+				console.error(error);
+				$(document).find('#dialogParticipation .response').html("<b class='error'>Nous rencontrons un problème, veuillez réessayer plus tard.</b>");
+				$('body').trigger('processStop');
+			}
+		});
+		return false; // Prevent the default form submission
+	});
+		
+	// ! New participation modal
+	// Trigger the file input on .selectImg click
+	$(document).on('click', '.selectImg', function() {
+		$('#participFile').click();
+	});
+
+	// Listen on #participFile change and update the dialog
+	const canvas = document.getElementById('imageCanvas');
+	const ctx = canvas.getContext('2d');
+	const cropArea = document.getElementById('cropArea');
+	const croppedImage = document.getElementById('croppedImage');
+	const canvasContainer = document.getElementById('canvas_container');
+
+	let cropper = {
+		startX: 0,
+		startY: 0,
+		width: 400,
+		height: 400,
+		dragging: false,
+		resizing: false,
+		aspectRatio: 1, // For maintaining the 1:1 aspect ratio
+		offsetX: 0,
+		offsetY: 0,
+		img: new Image()
+	};
+
+	function updateCropArea() {
+		cropArea.style.width = cropper.width + 'px';
+		cropArea.style.height = cropper.height + 'px';
+		cropArea.style.left = cropper.startX + 'px';
+		cropArea.style.top = cropper.startY + 'px';
+	}
+
+	// Fonction utilitaire pour obtenir les coordonnées des événements de souris et de touche
+	function getEventPosition(e) {
+			if (e.touches) {
+					return {
+							x: e.touches[0].clientX,
+							y: e.touches[0].clientY
+					};
+			} else {
+					return {
+							x: e.clientX,
+							y: e.clientY
+					};
+			};
+	}
+
+	// Événement de démarrage du drag (souris + tactile)
+	function startDrag(e) {
+			const pos = getEventPosition(e);
+			const canvasRect = canvas.getBoundingClientRect();
+			cropper.dragging = true;
+			cropper.offsetX = pos.x - canvasRect.left - cropper.startX;
+			cropper.offsetY = pos.y - canvasRect.top - cropper.startY;
+			e.preventDefault();
+	}
+
+	// Événement de déplacement du drag (souris + tactile)
+	function drag(e) {
+    if (cropper.dragging) {
+        const pos = getEventPosition(e);
+        const canvasRect = canvas.getBoundingClientRect();
+        cropper.startX = pos.x - canvasRect.left - cropper.offsetX;
+        cropper.startY = pos.y - canvasRect.top - cropper.offsetY;
+
+        // Prevent the crop area from going out of the canvas
+        if (cropper.startX < 0) {
+            cropper.startX = 0;
+        }
+        if (cropper.startY < 0) {
+            cropper.startY = 0;
+        }
+
+        const canvasContainerRect = canvas.getBoundingClientRect();
+        const canvasContainerWidth = canvasContainerRect.width;
+        const canvasContainerHeight = canvasContainerRect.height;
+
+        // Keep the crop area inside the canvas (canvasContainerHeight and canvasContainerWidth)
+        if (cropper.startX + cropper.width > canvasContainerWidth - 5) {
+            cropper.startX = canvasContainerWidth - cropper.width - 5;
+        }
+        if (cropper.startY + cropper.height > canvasContainerHeight - 5) {
+            cropper.startY = canvasContainerHeight - cropper.height - 5;
+        }
+
+        updateCropArea();
+    } else if (cropper.resizing) {
+        const pos = getEventPosition(e);
+        const canvasRect = canvas.getBoundingClientRect();
+        const mouseX = pos.x - canvasRect.left;
+        const mouseY = pos.y - canvasRect.top;
+        const size = Math.max(mouseX - cropper.startX, mouseY - cropper.startY);
+        cropper.width = size;
+        cropper.height = size;
+
+        // Prevent the crop area from going out of the canvas
+        if (cropper.startX + cropper.width > canvas.width) {
+            cropper.width = canvas.width - cropper.startX;
+            cropper.height = canvas.width - cropper.startX;
+        }
+        if (cropper.startY + cropper.height > canvas.height) {
+            cropper.width = canvas.height - cropper.startY;
+            cropper.height = canvas.height - cropper.startY;
+        }
+
+        // Min width and height
+        if (cropper.width < 50) {
+            cropper.width = 50;
+            cropper.height = 50;
+        }
+
+        const canvasContainerRect = canvas.getBoundingClientRect();
+        const canvasContainerWidth = canvasContainerRect.width;
+        const canvasContainerHeight = canvasContainerRect.height;
+
+        // Max width
+        if (cropper.width + cropper.startX > canvasContainerWidth - 5) {
+            cropper.width = canvasContainerWidth - cropper.startX - 5;
+            cropper.height = canvasContainerWidth - cropper.startX - 5;
+        }
+
+        // Max height
+        if (cropper.height + cropper.startY > canvasContainerHeight - 5) {
+            cropper.width = canvasContainerHeight - cropper.startY - 5;
+            cropper.height = canvasContainerHeight - cropper.startY - 5;
+        }
+
+        updateCropArea();
+    }
+    e.preventDefault();
+	}
+
+	// Événement de fin de drag (souris + tactile)
+	function stopDrag() {
+			cropper.dragging = false;
+			cropper.resizing = false;
+	}
+
+	// Ajout des écouteurs pour les événements de souris
+	cropArea.addEventListener('mousedown', startDrag);
+	document.addEventListener('mousemove', drag);
+	document.addEventListener('mouseup', stopDrag);
+
+	// Ajout des écouteurs pour les événements tactiles
+	cropArea.addEventListener('touchstart', startDrag);
+	document.addEventListener('touchmove', drag);
+	document.addEventListener('touchend', stopDrag);
+
+	const resizeHandles = document.querySelectorAll('.resize-handle');
+	resizeHandles.forEach(handle => {
+		handle.addEventListener('mousedown', function(e) {
+			e.stopPropagation();
+			cropper.resizing = true;
+		});
+	});
+
+	$(document).on('change', '#participFile', function() {
+    const file = $(this)[0].files[0];
+
+    $(this).parent().find('.response').html('');
+
+    if (!file) {
+			// If no file is selected, show the placeholder image
+			$('#dialogParticipForm .placeholderImage').removeClass('hidden');
+			return;
+    }
+
+    // Check for file type, accept only png, jpg, jpeg, webp, heic
+    if (!['image/png', 'image/jpg', 'image/jpeg', 'image/webp', 'image/heic'].includes(file.type)) {
+			$(this).parent().find('.response').html('<b class="error">Veuillez sélectionner une image valide (png, jpg, jpeg, webp, heic).</b>');
+			return;
+    }
+
+    // Check for file size, accept only files < 5MB
+    if (file.size > 5000000) {
+			$(this).parent().find('.response').html('<b class="error">La taille de l\'image doit être inférieure à 5MB.</b>');
+			return;
+    }
+
+		// Reset loading_text
+		$('#dialogParticipForm').find('.loading_text .title').text('Chargement de l\'image...');
+		$('#dialogParticipForm').find('.loading_text .progress').text('0 %');
+
+		// Hide selectImg button and show loading part
+		$('#dialogParticipForm').find('.selectImg').addClass('hidden');
+		$('#dialogParticipForm').find('.loading_part').removeClass('hidden');
+
+    const reader = new FileReader();
+
+		const formData = new FormData();
+		formData.append('image', file);
+
+    $.ajax({
+			url: "<?= $block->getUrl('contestio/ajax/checkimage') ?>",
+			type: 'POST',
+			data: formData,
+			contentType: false,
+			processData: false,
+			// Update percentage on progress
+			xhr: function() {
+				const xhr = new window.XMLHttpRequest();
+
+				xhr.upload.addEventListener('progress', function(e) {
+					if (e.lengthComputable) {
+						const percent = Math.round((e.loaded / e.total) * 100);
+
+						$('#dialogParticipForm').find('.loading_text .progress').text(percent + ' %');
+
+						// If the progress is 100%, change the text
+						if (percent === 100) {
+							$('#dialogParticipForm').find('.loading_text .title').text('Analyse de l\'image...');
+							$('#dialogParticipForm').find('.loading_text .progress').text('');
+						}
+					}
+				}, false);
+
+				return xhr;
+			},
+			success: function(response) {
+				// Hide loading part 
+				$('#dialogParticipForm').find('.loading_part').addClass('hidden');
+				
+				if (response.error) {
+					$('#dialogParticipForm').find('.response').html('<b class="error">' + response.message + '</b>');
+
+					// Reset form input file
+					$('#participFile').val('');
+
+					// Show the placeholder image
+					$('#dialogParticipForm .placeholderImage').removeClass('hidden');
+
+					// Hide loading part
+					$('#dialogParticipForm').find('.loading_part').addClass('hidden');
+					$('#dialogParticipForm').find('.selectImg').removeClass('hidden');
+				} else {
+					// response.image is base64 encoded image, decode it and set it as src
+					const srcDecoded = response.image;
+
+					// Hide placeholder image and show crop_part
+					$('#dialogParticipForm').find('.placeholderImage').addClass('hidden');
+					$('#dialogParticipForm').find('.crop_part').removeClass('hidden');
+
+					const image = new Image();
+					image.src = 'data:application/octet-stream;base64,' + srcDecoded;
+					image.onload = function() {
+						canvas.width = image.width;
+						canvas.height = image.height;
+
+						cropper.img = image;
+
+						ctx.drawImage(image, 0, 0);
+
+						// Add .isLandscape class if the image is landscape
+						if (image.width > image.height) {
+							$('#dialogParticipForm canvas').addClass('isLandscape');
+							$('#dialogParticipForm .canvas_container').addClass('isLandscape');
+						} else {
+							$('#dialogParticipForm canvas').removeClass('isLandscape');
+							$('#dialogParticipForm .canvas_container').removeClass('isLandscape');
+						}
+
+						const canvasContainerRect = canvas.getBoundingClientRect();
+						const canvasContainerWidth = canvasContainerRect.width;
+						const canvasContainerHeight = canvasContainerRect.height;
+
+						// Initialize cropper : full width if landscape, full height if portrait
+						if (canvasContainerWidth > canvasContainerHeight) {
+							cropper.width = canvasContainerHeight - 5;
+							cropper.height = canvasContainerHeight - 5;
+
+							cropArea.style.width = cropper.height + 'px';
+							cropArea.style.height = cropper.height + 'px';
+
+							// Center the cropArea
+							cropper.startX = (canvasContainerWidth - canvasContainerHeight) / 2;
+							cropper.startY = 0;
+
+							// Update cropArea position
+							cropArea.style.left = cropper.startX + 'px';
+							cropArea.style.top = cropper.startY + 'px';
+						} else {
+							cropper.width = canvasContainerWidth - 5;
+							cropper.height = canvasContainerWidth - 5;
+
+							cropArea.style.width = cropper.width + 'px';
+							cropArea.style.height = cropper.width + 'px';
+
+							// Center the cropArea
+							cropper.startX = 0;
+							cropper.startY = (canvasContainerHeight - canvasContainerWidth) / 2;
+
+							// Update cropArea position
+							cropArea.style.left = cropper.startX + 'px';
+							cropArea.style.top = cropper.startY + 'px';
+						}
+
+						cropArea.style.left = cropper.startX + 'px';
+						cropArea.style.top = cropper.startY + 'px';
+
+						cropArea.classList.remove('hidden');
+						$('#cropImageButton').removeClass('hidden');
+					};
+				}
+			},
+			error: function(xhr) {
+				console.error(xhr);
+
+				// Reset form input file
+				$('#participFile').val('');
+
+				// Hide loading part
+				$('#dialogParticipForm').find('.loading_part').addClass('hidden');
+				$('#dialogParticipForm').find('.selectImg').removeClass('hidden');
+
+				$('#dialogParticipForm').find('.response').html('<b class="error">Une erreur est survenue lors du traitement de l\'image.</b>');
+
+				// Show the placeholder image
+				$('#dialogParticipForm .placeholderImage').removeClass('hidden');
+			}
+		});
+
+    reader.readAsDataURL(file);
+	});
+
+	// Clear image and display selectImg button
+	$(document).on('click', '#deleteImage', function() {
+		// Hide crop_part and show the placeholder image
+		$('#dialogParticipForm').find('.crop_part').addClass('hidden');
+		$('#dialogParticipForm').find('.placeholderImage').removeClass('hidden');
+		$('#dialogParticipForm').find('.selectImg').removeClass('hidden');
+
+		// Reset form input file
+		$('#participFile').val('');
+
+		// Clear canvas
+		ctx.clearRect(0, 0, canvas.width, canvas.height);
+	});
+
+	// Submit new participation
+	$(document).on("submit", '#newParticipForm', function(e) {
+		e.preventDefault();
+
+		// Clear previous response
+		$(this).find('.response').html('');
+
+		// Get formData with description
+		const formData = new FormData(this);
+
+		const canvasRect = canvas.getBoundingClientRect();
+		const croppedCanvas = document.createElement('canvas');
+		const croppedCtx = croppedCanvas.getContext('2d');
+		const img = cropper.img;
+
+		// Check if image is selected
+		if (!img.src) {
+			$(this).find('.response').html('<b class="error">Veuillez sélectionner une photo à télécharger.</b>');
+			return false;
+		}
+		
+		// Get size according to the aspect ratio
+		const displayedCanvasWidth = canvasRect.width;
+		const displayedCanvasHeight = canvasRect.height;
+
+		// Get the natural dimensions of the image
+		const actualImageWidth = img.naturalWidth;
+		const actualImageHeight = img.naturalHeight;
+
+		// Calculate the scale factors
+		const scaleX = actualImageWidth / displayedCanvasWidth;
+		const scaleY = actualImageHeight / displayedCanvasHeight;
+
+		// Adjust cropper dimensions based on scale factors
+		const actualCropX = cropper.startX * scaleX;
+		const actualCropY = cropper.startY * scaleY;
+		const actualCropWidth = cropper.width * scaleX;
+		const actualCropHeight = cropper.height * scaleY;
+
+		// Set the canvas dimensions to the actual crop size
+		croppedCanvas.width = actualCropWidth;
+		croppedCanvas.height = actualCropHeight;
+
+		// Draw the cropped image on the new canvas using the actual dimensions
+		croppedCtx.drawImage(
+				img,
+				actualCropX, actualCropY, // Start cropping from these coordinates
+				actualCropWidth, actualCropHeight, // Crop this width and height
+				0, 0, // Place the cropped part at (0, 0) in the new canvas
+				actualCropWidth, actualCropHeight // Resize the cropped part to fit the new canvas
+		);
+
+		// hide .canvas_container
+		$('#dialogParticipForm .canvas_container').addClass('hidden');
+
+		const croppedImageDataUrl = croppedCanvas.toDataURL('image/webp');
+		croppedImage.src = croppedImageDataUrl;
+		croppedImage.classList.remove('hidden');
+
+		const button = $(document).find('#dialogParticipForm button[type="submit"]');
+
+		button.text('Envoi en cours...');
+		button.prop('disabled', true);
+
+		// Si vous voulez envoyer l'image recadrée au serveur
+		croppedCanvas.toBlob(function(blob) {
+			formData.append('image', blob);
+
+			const newImg = document.createElement('img');
+			newImg.src = URL.createObjectURL(blob);
+
+			$.ajax({
+				url: "<?php echo $block->getUrl('contestio/ajax/addparticipation') ?>",
+				type: 'POST',
+				data: formData,
+				processData: false,
+				contentType: false,
+				dataType: "json",
+				success: function(data) {
+					console.log(data);
+					button.text('Participer');
+					button.prop('disabled', false);
+
+					// $('body').trigger('processStop');
+
+					if(data.success) {
+						$(document).find('#dialogParticipForm .response').html(
+							data.error ? '<b class="error">'+data.message+'</b>' : '<b class="success">'+data.message+'</b>'
+						);
+						$(document).find('#dialogParticipForm').addClass('reload');
+
+
+						if (!data.error) {
+							// Remove .full-width div
+							$('#dialogParticipForm .full-width').addClass('hidden');
+
+							// Disable the button
+							button.prop('disabled', true);
+							button.text('Participation ajoutée');
+						}
+
+					} else {
+						$(document).find('#dialogParticipForm .response').html('<b class="error">Il y a un problème, veuillez réessayer plus tard.</b>');
+					}
+				},
+				error: function(error) {
+					console.error(error);
+					button.text('Participer');
+					button.prop('disabled', false);
+					// $('body').trigger('processStop');
+					$(document).find('#newParticipForm .response').html('<b class="error">Il y a un problème, veuillez réessayer plus tard.</b>');
+					$(document).find('#newParticipForm .response').show();
+				}
+			});
+		}, 'image/webp');
+	});
+
+	// Listen on #newParticipForm textarea change and update the character count
+	$(document).on('input', '#newParticipForm textarea', function() {
+		const currentLength = $(this).val().length;
+
+		$(this).parent().find('span.descriptionLength').text(currentLength);
+	});
+
+	// ! Edit my participation modal
+	// Open Edit modal
+	$(document).on('click', '#openParticipUpdate', function(e) {
+		e.preventDefault();
+
+		// Update dialog infos
+		const dialog = document.getElementById('dialogParticipUpdate');
+
+		dialog.querySelector('.postImage').src = $(this).attr('data-image');
+		dialog.querySelector('textarea').value = $(this).attr('data-description');
+		dialog.querySelector('.descriptionLength').innerHTML = $(this).attr('data-description').length;
+		dialog.querySelector('.contestId').value = $(this).attr('data-contest');
+
+		// Update #deleteButton data-contest with the contestId
+		document.getElementById('deleteButton').setAttribute('data-contest', $(this).attr('data-contest'));
+
+		// Update last scroll position
+		lastScrollTop = $(window).scrollTop();
+
+		// Scroll top if mobile
+		if (window.innerWidth < 768) {
+			window.scrollTo(0, 0);
+		}
+
+		// Show the modal and overlay
+		$('#dialogParticipUpdate').removeClass('hidden');
+		$('.contestio_overlay').removeClass('hidden');
+
+		// Add class from main container
+		$('.contestio-main-container').addClass('contestio_overlay_open');
+	});
+
+	// Listen on #dialogParticipUpdate textarea change and update the character count
+	$(document).on('input', '#dialogParticipUpdate textarea', function() {
+		const currentLength = $(this).val().length;
+
+		$(this).parent().find('span.descriptionLength').text(currentLength);
+	});
+
+	// Submit the edit form
+	$(document).on('submit', '#updateParticipForm', function(e) {
+		e.preventDefault();
+
+		const contestId = $(this).find('.contestId').val();
+		const description = $(this).find('textarea').val();
+
+		// Check if the description is too long
+		if (description.length > 200) {
+			$(this).find('.response').html('<b class="error">La description doit contenir moins de 200 caractères.</b>');
+			return false;
+		}
+
+		$.ajax({
+			type: "POST",
+			url: "<?= $block->getUrl('contestio/ajax/editparticipation') ?>",
+			data: {
+				contestId,
+				description
+			},
+			dataType: "json",
+			success: function(data) {
+				if(data.success == 'true') {
+					if(data.status == 400) {
+						$(document).find('#updateParticipForm .response').html('<b class="error">'+data.message+'</b>');
+					} else {
+						$(document).find('#updateParticipForm button[type="submit"]').text('Participation modifiée');
+
+						// Disable the button
+						$(document).find('#updateParticipForm button[type="submit"]').prop('disabled', true);
+					}
+				} else {
+					$(document).find('#updateParticipForm .response').html("<b class='error'>Nous rencontrons un problème, veuillez réessayer plus tard.</b>");
+				}
+				$(document).find('#dialogParticipUpdate').addClass('reload');
+			},
+			error: function(error) {
+				console.error(error);
+				$(document).find('#updateParticipForm .response').html("<b class='error'>Nous rencontrons un problème, veuillez réessayer plus tard.</b>");
+			}
+		});
+	});
+
+	// ! Delete my participation modal
+	// Open Delete modal
+	$(document).on('click', '#deleteParticip', function(e) {
+		e.preventDefault();
+
+		// Hide the participation update dialog
+		$('#dialogParticipUpdate').addClass('hidden');
+
+		// Show delete dialog
+		$('#dialogDelete').removeClass('hidden');
+	});
+
+	// Submit the delete form
+	$(document).on('click', '#deleteButton', function(e) {
+		e.preventDefault();
+
+		const contestId = $(this).attr('data-contest');
+
+		if (!contestId) {
+			$(this).find('.response').html('<b class="error">Nous rencontrons un problème, veuillez réessayer plus tard.</b>');
+			return false;
+		}
+
+		$.ajax({
+			type: "POST",
+			url: "<?= $block->getUrl('contestio/ajax/deleteparticipation') ?>",
+			data: {
+				contestId
+			},
+			dataType: "json",
+			success: function(data) {
+				if(data.success == 'true') {
+					if(data.status == 400) {
+						$(document).find('#dialogDelete .response').html('<b class="error">'+data.message+'</b>');
+					} else {
+						// Disable the button
+						$(document).find('#dialogDelete button#deleteButton').prop('disabled', true);
+						$(document).find('#dialogDelete button#deleteButton').text('Participation supprimée');
+					}
+				} else {
+					$(document).find('#dialogDelete .response').html("<b class='error'>Nous rencontrons un problème, veuillez réessayer plus tard.</b>");
+				}
+				$(document).find('#dialogDelete').addClass('reload');
+			},
+			error: function(error) {
+				console.error(error);
+				$(document).find('#dialogDelete .response').html("<b class='error'>Nous rencontrons un problème, veuillez réessayer plus tard.</b>");
+			}
+		});
+	});
+
+	// ! Flag (report) modal
+	// Open Flag modal
+	$(document).on("click", '#dialogParticipation .report-link', function(e) {
+		e.preventDefault();
+
+		// If not logged, show login modal
+		<?php if(!$userIdToCheck): ?>
+			// Hide participation form, show login form
+			$('#dialogParticipation').addClass('hidden');
+			$('#dialogLogin').removeClass('hidden');
+			return false;
+		<?php endif; ?>
+
+		// If user is logged but no pseudo, show the pseudo form
+		<?php if(!$handle): ?>
+			// Hide participation form, show pseudo form
+			$('#dialogPseudo').find('.firstName').html('<?= $firstname ?>');
+			$('#dialogParticipation').addClass('hidden');
+			$('#dialogPseudo').removeClass('hidden');
+			return false;
+		<?php endif; ?>
+
+		// Update flagReason hidden field
+		const handle = $('#handle').val();
+		const userPseudo = $(this).attr('data-user');
+		const partId = $(this).attr('data-participation');
+		const contestId = $(this).attr('data-contest');
+
+		// Update #dialogFlag .user
+		$('#dialogFlag .user').html(userPseudo);
+
+		// Update #dialogFlag hidden fields
+		$('#dialogFlag .participationId').val(partId);
+		$('#dialogFlag .contestId').val(contestId);
+
+		// Select the first reason
+		$('#dialogFlag #flagReason').val('Contenu inapproprié');
+
+		// Reset flagReasonOther
+		$('#dialogFlag #flagReasonOther').val('');
+		$('#dialogFlag #flagReasonOtherDiv').addClass('hidden');
+
+		// Clear message
+		$('#dialogFlag .error-msg').html('');
+
+		// Reset the button
+		$('#flagButton').prop('disabled', false);
+		$('#flagButton').text('Signaler');
+
+		// Show flag dialog, hide participation dialog
+		$('#dialogParticipation').addClass('hidden');
+		$('#dialogFlag').removeClass('hidden');
+	});
+
+	// Listen for flagReason changes and show #flagReasonOther if 'other' is selected
+	$(document).on('change', '#flagReason', function() {
+		const flagReason = $(this).val();
+		const flagReasonOther = $('#flagReasonOtherDiv');
+
+		if (flagReason === 'other') {
+			flagReasonOther.removeClass('hidden');
+		} else {
+			flagReasonOther.addClass('hidden');
+		}
+	});
+
+	// Trigger report form
+	$(document).on('click', '#flagButton', function() {
+		$('#flagForm').submit();
+	});
+
+	// Submit the flag form
+	$(document).on("submit", '#flagForm', function(e) {
+		e.preventDefault();
+
+		let reason = $(this).find('#flagReason').val();
+
+		// If the reason is 'other', check if the input is not empty
+		const flagReason = $(this).find('#flagReason').val();
+
+		// Check if the reason is valid
+		if (flagReason === 'other') {
+			const flagReasonOther = $(this).find('#flagReasonOther').val();
+
+			if (!flagReasonOther) {
+				$('#dialogFlag .error-msg').html('<b class="error">Veuillez préciser la raison.</b>');
+				return false;
+			} else if (flagReasonOther.length < 10) {
+				$('#dialogFlag .error-msg').html('<b class="error">La raison doit contenir au moins 10 caractères.</b>');
+				return false;
+			} else if (flagReasonOther.length > 200) {
+				$('#dialogFlag .error-msg').html('<b class="error">La raison doit contenir moins de 200 caractères.</b>');
+				return false;
+			}
+
+			reason = flagReasonOther;
+		}
+
+		// Texts
+		const defaultText = "<?php echo __('Signaler') ?>";
+		const loadingText = "<?php echo __('Veuillez patienter...') ?>";
+
+		const loginButton = $('#flagButton');
+
+		loginButton.text(loadingText);
+		loginButton.attr("disabled", "disabled");
+
+		try {
+			const flagUrl = "<?php echo $block->getUrl('contestio/ajax/addflag') ?>";
+
+			$.ajax({
+				url: flagUrl,
+				type: 'POST',
+				data: JSON.stringify({
+					participationId: $(this).find('.participationId').val(),
+					contestId: $(this).find('.contestId').val(),
+					reason: reason
+				}),
+				contentType: 'application/json',
+				success: function(data) {
+					if(data.success === false || data.error) {
+						loginButton.text(defaultText);
+						loginButton.removeAttr('disabled');
+
+						// Show error message
+						$('#dialogFlag .error-msg').html('<b class="error">'+data.message+'</b>');
+					} else {
+						loginButton.text('Signalé');
+
+						$('#dialogFlag .error-msg').html('<b class="success">'+data.message+'</b>');
+					}
+				},
+				error: function(error) {
+					console.error(error);
+
+					loginButton.text(defaultText);
+					loginButton.removeAttr('disabled');
+
+					$('#dialogFlag .error-msg').html('<b class="error">Une erreur s\'est produite.</b>');
+				}
+			});
+		} catch (error) {
+			console.error(error);
+
+			loginButton.text(defaultText);
+			loginButton.removeAttr('disabled');
+		}
+	});
+
+	// Handle the copy button
+	$(document).on("click", '.copybutton', function(e) {
+		e.preventDefault();
+		
+		let partId = $(this).attr('data-participation');
+
+		if (!partId) {
+			const form = $(this).closest('form');
+			partId = form.find('input[name="participationId"]').val();
+		}
+
+		const link = '<?php echo $this->getUrl('contestio/concours/index/'); ?>partid/'+partId;
+		
+		// Create a temporary input element
+		const input = document.createElement('textarea');
+		input.value = link;
+		document.body.appendChild(input);
+
+		// Select and copy the text inside the input element
+		input.select();
+		document.execCommand('copy');
+
+		// Remove the input element
+		document.body.removeChild(input);
+
+		// Add a small message element to display the notification
+		const messageElement = $('<div>').text('Lien copié').css({
+			'position': 'fixed',
+			'bottom': '10px',
+			'right': '10px',
+			'background': '#333',
+			'color': '#fff',
+			'padding': '5px 10px',
+			'border-radius': '5px'
+		}).hide().appendTo('body');
+
+		// Show the message with animation and fade out after 2 seconds
+		messageElement.fadeIn(400).delay(2000).fadeOut(400);
+	});
+
+	// ! Order by modal
+	// Open Order by modal
+	$(document).on('click', '#openOrderByDialog', function(e) {
+		e.preventDefault();
+
+		// Update last scroll position
+		lastScrollTop = $(window).scrollTop();
+
+		// Scroll top if mobile
+		if (window.innerWidth < 768) {
+			window.scrollTo(0, 0);
+		}
+
+		// Show the modal and overlay
+		$('#dialogOrderby').removeClass('hidden');
+		$('.contestio_overlay').removeClass('hidden');
+
+		// Add class from main container
+		$('.contestio-main-container').addClass('contestio_overlay_open');
+	});
+
+	// Trigger the form on #sortForm submit
+	$(document).on('click', '#newSort', function() {
+		$('#sortForm').submit();
+	});
+
+	// Submit the order by form
+	$(document).on('submit', '#sortForm', function(e) {
+		e.preventDefault();
+
+		const val = $(this).find('input[name="sortBy"]:checked').val();
+
+		// Default for 'populars'
+		let sortBy = 'likes';
+		let orderBy = 'desc';
+
+		if (val === 'recents') {
+			sortBy = 'createdAt';
+			orderBy = 'desc';
+		} else if (val === 'oldest') {
+			sortBy = 'createdAt';
+			orderBy = 'asc';
+		} else if (val === 'unpopulars') {
+			sortBy = 'likes';
+			orderBy = 'asc';
+		}
+
+		const baseUrl = '<?= $this->getUrl('contestio/concours') ?>';
+		const selectedValue = 'sortBy=' + sortBy + '&orderBy=' + orderBy;
+
+		window.location.href = baseUrl + '?' + selectedValue;
+	});
+
+	// Calculate time left for next vote and update the text every second
+	setInterval(() => {
+		// Time left = time until tomorrow 00:00:00
+		const now = new Date();
+		const tomorrow = new Date(now);
+		tomorrow.setDate(tomorrow.getDate() + 1);
+		tomorrow.setHours(0, 0, 0, 0);
+		const timeLeft = Math.floor((tomorrow - now) / 1000);
+
+		const hour = Math.floor(timeLeft / 3600);
+		const minute = Math.floor(timeLeft % 3600 / 60);
+		const second = timeLeft % 60;
+
+		// Update the text
+		$('.time-left').text(
+			hour > 0
+			? hour + 'h '
+			: minute > 0
+			? minute + 'm '
+			: second + 's'
+		);
+	}, 1000);
+});
+</script>

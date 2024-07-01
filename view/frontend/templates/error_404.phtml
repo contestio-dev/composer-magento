@@ -1,0 +1,25 @@
+<div class="contestio-main-container error-page">
+  <img
+    src="<?php echo $block->getViewFileUrl('Contestio_Connect::images/error404.svg'); ?>"
+    alt="Not found"
+    height="300"
+    width="300"
+  />
+
+  <h3>
+    Page non trouvée
+  </h3>
+
+  <p>
+    La page que vous cherchez n'existe pas ou a été déplacée.
+  </p>
+
+  <a
+    href="https://contestio.fr/report-bug/?url=<?php echo $this->getUrl('*/*/*', ['_current' => true, '_use_rewrite' => true]); ?>&code=AUTH_404"
+    target="_blank"
+  >
+    Signaler l'erreur
+  </a>
+
+  <?php echo $this->getLayout()->createBlock("Magento\Framework\View\Element\Template")->setTemplate("Contestio_Connect::footer.phtml")->toHtml() ?>
+</div>
