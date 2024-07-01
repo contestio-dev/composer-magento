@@ -7,6 +7,7 @@
     "php": "^7.4 || ^8.0",
     "magento/framework": "^102.0.0"
   },
+  "license": "proprietary",
   "autoload": {
     "files": [
       "registration.php"
