@@ -8,6 +8,8 @@
     "magento/framework": "^102.0.0"
   },
   "license": "proprietary",
+  "minimum-stability": "dev",
+  "prefer-stable": true,
   "autoload": {
     "files": [
       "registration.php"
