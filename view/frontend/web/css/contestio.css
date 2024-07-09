@@ -408,14 +408,21 @@ footer#contestio-footer img {
   padding: 20px 20px 0 20px;
   width: 100%;
   height: 100%;
+  max-width: calc(98vw / 3);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  overflow: hidden;
   cursor: pointer;
   position: relative;
   box-sizing: border-box;
   box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.1);
   transition: all 0.3s ease;
+}
+@media (max-width: 1023px) {
+  .competition-item {
+    max-width: calc(98vw / 2);
+  }
 }
 @media (max-width: 767px) {
   .competition-item {
@@ -480,6 +487,7 @@ footer#contestio-footer img {
 .competition-item .competition-item-footer .description {
   height: 17px;
   width: 100%;
+  max-width: 100%;
   font-size: 1.2rem;
   color: var(--contestio-grey-300);
   overflow: hidden;
@@ -488,6 +496,7 @@ footer#contestio-footer img {
   -webkit-line-clamp: 1;
   -webkit-box-orient: vertical;
   word-wrap: break-word;
+  word-break: break-all;
 }
 .competition-item .competition-item-photo {
   width: 100%;
@@ -1380,6 +1389,14 @@ dialog.twoPart .secondPart p,
 .contest_preview.twoPart .secondPart p {
   font-size: 1.4rem;
   color: var(--contestio-grey-300);
+}
+dialog.twoPart .secondPart p.postDescription,
+.contestio_overlay aside.twoPart .secondPart p.postDescription,
+.contest_preview.twoPart .secondPart p.postDescription {
+  text-align: left;
+  width: 100%;
+  margin: 1rem auto;
+  word-break: break-all;
 }
 dialog.twoPart .secondPart p.time-left-msg,
 .contestio_overlay aside.twoPart .secondPart p.time-left-msg,
