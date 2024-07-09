@@ -115,7 +115,7 @@ class ContestioClubObserver implements ObserverInterface
      */
     public function postCustomerData($payload)
     {
-        $apiUrl = $this->helper->getApiBaseUrl() . '/v1/user';
+        $apiUrl = $this->helper->getApiBaseUrl() . '/v1/users/final/upsert';
 
         $clientKey = $this->scopeConfig->getValue('authkeys/clientkey/clientpubkey');
         $clientSecret = $this->scopeConfig->getValue('authkeys/clientkey/clientsecret');
