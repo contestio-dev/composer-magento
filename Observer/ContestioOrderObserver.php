@@ -117,7 +117,7 @@ class ContestioOrderObserver implements ObserverInterface
      */
     public function postOrderData($payload)
     {
-        $apiUrl = $this->helper->getApiBaseUrl() . '/v1/user/order';
+        $apiUrl = $this->helper->getApiBaseUrl() . '/v1/users/final/new-order';
 
         $clientKey = $this->scopeConfig->getValue('authkeys/clientkey/clientpubkey');
         $clientSecret = $this->scopeConfig->getValue('authkeys/clientkey/clientsecret');
