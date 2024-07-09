@@ -70,40 +70,21 @@ class Index extends \Magento\Framework\View\Element\Template
      *
      * @return array|false
      */
-    public function fetchNavButtons()
+    public function buttonsAndUser()
     {
         // API URL
-        $apiUrl = $this->helper->getApiBaseUrl() . '/v1/header-buttons';
+        $apiUrl = $this->helper->getApiBaseUrl() . '/v1/org/header';
         
         $clientKey = $this->scopeConfig->getValue('authkeys/clientkey/clientpubkey');
         $clientSecret = $this->scopeConfig->getValue('authkeys/clientkey/clientsecret');
 
-        /** @var CustomerInterface $customer */
-		$customer = $this->customerSession->getCustomer();
-
-        $userId = null;
-        $handle = null;
-
-		if ($customer) {
-			// Get user data from the session
-            $userId = $customer->getId();
-            $handle = $customer->getData('contestio_pseudo');
-		}
-        
         // Request Headers
         $headers = [
             "Content-Type: application/json",
             "clientKey: " . $clientKey,
-            "clientSecret: " . $clientSecret
+            "clientSecret: " . $clientSecret,
+            "externalId: " . $this->customerSession->getCustomerId()
         ];
-
-        $body = [
-            'userId' => $userId,
-            'handle' => $handle
-        ];
-
-        // Encode the body data as JSON
-        $jsonBody = json_encode($body);
                 
         $curl = curl_init();
         curl_setopt_array($curl, [
@@ -115,7 +96,7 @@ class Index extends \Magento\Framework\View\Element\Template
             CURLOPT_FOLLOWLOCATION => true,
             CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
             CURLOPT_CUSTOMREQUEST => 'GET',
-            CURLOPT_POSTFIELDS => $jsonBody,
+            CURLOPT_POSTFIELDS => '',
             CURLOPT_HTTPHEADER => $headers,
         ]);
 
@@ -136,41 +117,27 @@ class Index extends \Magento\Framework\View\Element\Template
 
         // Check if user in response is the same as the current user
         $user = $data['user'] ?? null;
-        $isLogged = $this->customerSession->isLoggedIn();
 
-        // User not found in response, add it and reset local pseudo
-        if ($isLogged && $user === null) {
-            // Reset pseudo if exists
-            if ($handle) {
-                $customer->setData('contestio_pseudo', null);
-                $customer->save();
-            }
+        $customer = $this->customerSession->getCustomerDataObject();
 
-            $this->upsertFinalUser();
-        } else if ($isLogged && $user !== null) {
-            // If user.pseudo not exists or is different from the current pseudo, update it
-            if (!isset($user['pseudo']) || $user['pseudo'] !== $handle) {
-                // Reset pseudo if exists
-                if ($handle) {
-                    $customer->setData('contestio_pseudo', null);
-                    $customer->save();
-                }
+        // Update user infos if needed
+        if ($user) {
+            // User found in response, check if the firstname, lastname and email are the same
+            $customerFirstName = $customer->getFirstName();
+            $customerLastName = $customer->getLastName();
+            $customerEmail = $customer->getEmail();
+            $pseudo = $user['pseudo'] ?? null;
 
-                $this->upsertFinalUser();
-            } else {
-                // User found in response, check if the firstname, lastname and email are the same
-                $customerFirstName = $customer->getFirstName();
-                $customerLastName = $customer->getLastName();
-                $customerEmail = $customer->getEmail();
-
-                if ($user['firstName'] !== $customerFirstName || $user['lastName'] !== $customerLastName || $user['email'] !== $customerEmail) {
-                    $this->upsertFinalUser();
-                }
+            if ($user['firstName'] !== $customerFirstName || $user['lastName'] !== $customerLastName || $user['email'] !== $customerEmail) {
+                $this->upsertFinalUser($pseudo);
             }
         }
-        
+
         // Return the buttons data
-        return $data && isset($data['buttons']) ? $data['buttons'] : [];
+        return array(
+            'buttons' => $data && isset($data['buttons']) ? $data['buttons'] : [],
+            'pseudo' => $user['pseudo'] ?? null,
+        );
     }
     
     /**
@@ -181,7 +148,7 @@ class Index extends \Magento\Framework\View\Element\Template
     public function fetchSurveyData()
     {
         // API URL
-        $apiUrl = $this->helper->getApiBaseUrl() . '/v1/survey';
+        $apiUrl = $this->helper->getApiBaseUrl() . '/v1/surveys';
         
         $clientKey = $this->scopeConfig->getValue('authkeys/clientkey/clientpubkey');
         $clientSecret = $this->scopeConfig->getValue('authkeys/clientkey/clientsecret');
@@ -190,8 +157,7 @@ class Index extends \Magento\Framework\View\Element\Template
         $headers = [
             "clientKey" => $clientKey,
             "clientSecret" => $clientSecret,
-            "x-userid" => $this->customerSession->getCustomerId() ?? null,
-            "x-handle" => $this->customerSession->getCustomer()->getData('contestio_pseudo') ?? null
+            "externalId" => $this->customerSession->getCustomer()->getId(),
         ];
 
         // Set request headers
@@ -224,17 +190,6 @@ class Index extends \Magento\Framework\View\Element\Template
         return (bool)$this->httpContext->getValue(\Magento\Customer\Model\Context::CONTEXT_AUTH);
     }
 
-    public function getPseudo()
-    {
-        $customerNickName = null;
-
-        if ($this->customerSession->isLoggedIn()) {
-            $customerNickName = $this->customerSession->getCustomer()->getData('contestio_pseudo') ?? null;
-        }
-        
-        return $customerNickName;
-    }
-
     public function getFirstname()
     {
         $customerNickName = null;
@@ -252,12 +207,12 @@ class Index extends \Magento\Framework\View\Element\Template
         return $this->scopeConfig->getValue($path, \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
     }
 
-    public function upsertFinalUser()
+    public function upsertFinalUser($pseudo)
     {
         /** @var CustomerInterface $customer */
         $customer = $this->customerSession->getCustomerDataObject();
 
-        $apiUrl = $this->helper->getApiBaseUrl() . '/v1/user';
+        $apiUrl = $this->helper->getApiBaseUrl() . '/v1/users/final/upsert';
         
         $clientKey = $this->scopeConfig->getValue('authkeys/clientkey/clientpubkey');
         $clientSecret = $this->scopeConfig->getValue('authkeys/clientkey/clientsecret');
@@ -268,19 +223,12 @@ class Index extends \Magento\Framework\View\Element\Template
             "clientSecret: " . $clientSecret
         ];
 
-        $fromContestio = $customer->getCustomAttribute('from_contestio') && $customer->getCustomAttribute('from_contestio')->getValue() === 1
-            ? true
-            : false;
-
-        $pseudo = $customer->getCustomAttribute('contestio_pseudo') ? $customer->getCustomAttribute('contestio_pseudo')->getValue() : null;
-
         $body = [
             'externalId' => $customer->getId(),
+            'pseudo' => $pseudo, // From API response
             'email' => $customer->getEmail(),
-            'pseudo' => $pseudo,
             'fname' => $customer->getFirstName(),
-            'lname' => $customer->getLastName(),
-            'isFromContestio' => $fromContestio,
+            'lname' => $customer->getLastName()
         ];
 
         // Encode the body data as JSON

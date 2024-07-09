@@ -86,38 +86,30 @@ class Socialshare extends Action
         
         $postdata = json_decode($this->getRequest()->getContent(), true);
         
-        if (!isset($postdata['objectId']) || !isset($postdata['platform'])) {
-            return $resultJson->setData(['success' => false, 'message' => 'Invalid objectId or platform']);
+        if (!isset($postdata['objectId']) || !isset($postdata['platform']) || !isset($postdata['action'])) {
+            return $resultJson->setData(['success' => false, 'message' => 'Invalid objectId or platform or action']);
         }
-
-        $apiUrl = $this->helper->getApiBaseUrl() . '/v1/stats/user/activity';
+        
+        
+        $apiUrl = $this->helper->getApiBaseUrl() . '/v1/activity/final-user';
         
         $clientKey = $this->scopeConfig->getValue('authkeys/clientkey/clientpubkey');
         $clientSecret = $this->scopeConfig->getValue('authkeys/clientkey/clientsecret');
         
+		/** @var CustomerInterface $customer */
+		$customer = $this->customerSession->getCustomer();
+        
         $headers = [
             "Content-Type: application/json",
             "clientKey: " . $clientKey,
-            "clientSecret: " . $clientSecret
+            "clientSecret: " . $clientSecret,
+            "externalId: " . $customer->getId()
         ];
-        
-		/** @var CustomerInterface $customer */
-		$customer = $this->customerSession->getCustomer();
-
-        $userId = null;
-        $handle = null;
-
-		if ($customer) {
-			// Get user data from the session
-            $userId = $customer->getId();
-            $handle = $customer->getData('contestio_pseudo');
-		}
 
         $body = [
             'objectId' => $postdata['objectId'],
             'platform' => $postdata['platform'],
-			'userId' => $userId,
-			'handle' => $handle
+            'action' => $postdata['action']
         ];
 
         // Encode the body data as JSON
@@ -137,15 +129,13 @@ class Socialshare extends Action
             CURLOPT_HTTPHEADER => $headers,
         ]);
 
-        $response = curl_exec($curl);
+        curl_exec($curl);
+
         $httpStatus = curl_getinfo($curl, CURLINFO_HTTP_CODE);
-        $curlError = curl_error($curl);
         curl_close($curl);
-        
-        if ($httpStatus == 200) {
-            return $resultJson->setData(['success' => true, 'message' => 'Share recorded successfully', 'response' => json_decode($response, true)]);
-        } else {
-            return $resultJson->setData(['success' => false, 'message' => 'Error recording share', 'response' => json_decode($response, true)]);
-        }
+
+        return $resultJson->setData([
+            'success' => $httpStatus === 201
+        ]);
     }
 }

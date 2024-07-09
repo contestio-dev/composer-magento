@@ -1,0 +1,235 @@
+// Competiton container, list of competition items
+.competition-wrapper {
+  width: auto;
+  padding: 2rem;
+
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-auto-rows: 1fr;
+  gap: 3rem;
+  justify-content: center;
+  align-items: center;
+  justify-items: center;
+  align-content: center;
+
+  &.oblong .competition-item-photo img {
+    border-radius: 10px;
+  }
+  &.square .competition-item-photo img {
+    border-radius: 0;
+  }
+  &.circle .competition-item-photo img {
+    border-radius: 50%;
+    width: 90%;
+  }
+
+  // Responsive 2 items
+  @media (max-width: 1023px) {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2rem;
+  }
+
+  // Responsive mobile
+  @media screen and (max-width: 767px){
+    padding: 5px;
+  }
+}
+
+// Competition (contest) item with photo, user name, and social media share icons
+.competition-item {
+  border-radius: 10px;
+  border: 1px solid #ddddddaa;
+  background: var(--contestio-white);
+
+  padding: 20px 20px 0 20px;
+  width: 100%;
+  height: 100%;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+
+  @media (max-width: 767px) {
+    padding: 8px 8px 0 8px;
+  }
+  
+  cursor: pointer;
+  position: relative;
+  box-sizing: border-box;
+
+  // Light shadow
+  box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+
+  // Hover effect
+  &:hover {
+    box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.2);
+    transform: scale(0.95);
+  }
+
+  // Body of item
+  .competition-item-body {
+    margin-bottom: 12px;
+  }
+
+  // Footer of item
+  .competition-item-footer {
+    width: auto;
+    padding: 10px;
+
+    display: flex;
+    flex-direction: column;
+
+    @media (max-width: 767px) {
+      padding: 5px;
+    }
+
+    .head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 0.5rem;
+
+      .pseudo {
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: var(--contestio-primary);
+        margin: 0;
+        padding: 0;
+      }
+
+      .likeCount {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+
+        img {
+          width: 20px;
+          height: 20px;
+        }
+
+        span {
+          font-size: 1.4rem;
+          font-weight: 700;
+          color: var(--contestio-black);
+        }
+
+        @media screen and (max-width: 767px){
+          img {
+            width: 16px;
+            height: 16px;
+          }
+
+          span {
+            font-size: 1.2rem;
+          }
+        }
+      }
+    }
+
+    .description {
+      height: 17px;
+      width: 100%;
+      font-size: 1.2rem;
+      color: var(--contestio-grey-300);
+
+      // Ellipsis, break word, 2 lines max
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: -webkit-box;
+      -webkit-line-clamp: 1;
+      -webkit-box-orient: vertical;
+      word-wrap: break-word;
+
+    }
+  }
+
+  // Photo of item
+  .competition-item-photo {
+    width: 100%;
+    height: 100%;
+    max-height: 300px;
+    overflow: hidden;
+    position: relative;
+
+    display: flex;
+
+    img {
+      margin-bottom: auto;
+      width: 100%;
+      height: fit-content;
+      object-fit: cover;
+      aspect-ratio: 1 / 1;
+    }
+
+    .rank {
+      position: absolute;
+      top: 1rem;
+      left: 1rem;
+      background: var(--contestio-white);
+      border-radius: 50%;
+      font-size: 1.2rem;
+
+      box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.1);
+      border: 1px solid #ddddddaa;
+
+      height: 6rem;
+      width: 6rem;
+
+      aspect-ratio: 1 / 1;
+      width: fit-content;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      @media screen and (max-width: 767px) {
+        top: 0.2rem;
+        left: 0.2rem;
+
+        height: 4rem;
+        width: 4rem;
+
+        img {
+          width: 20px;
+          height: 20px;
+        }
+      }
+      
+      span {
+        text-align: center;
+
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+
+        line-height: 1.6rem;
+
+        .rankLevel {
+          display: block;
+          font-size: 1.8rem;
+          font-weight: 700;
+        }
+
+        @media screen and (max-width: 767px) {
+          font-size: 1rem;
+
+          .rankLevel {
+            font-size: 1.2rem;
+            line-height: 1rem;
+          }
+        }
+      }
+
+      img {
+        margin: auto;
+        width: 30px;
+        height: 30px;
+        object-fit: contain;
+        border-radius: 0;
+      }
+    }
+  }
+}

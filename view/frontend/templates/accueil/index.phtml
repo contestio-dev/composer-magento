@@ -17,7 +17,8 @@ $firstname = null;
 $isFirstCustomBlock = true;
 
 try {
-	$navButtons = $block->fetchNavButtons();
+	$navDatas = $block->buttonsAndUser();
+	$navButtons = isset($navDatas['buttons']) ? $navDatas['buttons'] : [];
 	$homeConfigData = $block->fetchHomeConfigData();
 
 	if (isset($homeConfigData['code']) && $homeConfigData['code'] == 'AUTH_401') {
@@ -30,7 +31,7 @@ try {
 
 	$isLogged = $block->isCustomerLoggedIn();
 	if ($isLogged) {
-		$pseudo = $block->getPseudo();
+		$pseudo = isset($navDatas['pseudo']) ? $navDatas['pseudo'] : null;
 		$firstname = $block->getFirstname();
 	}
 

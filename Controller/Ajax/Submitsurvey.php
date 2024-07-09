@@ -52,8 +52,12 @@ class Submitsurvey extends Action
 	}
 
 	public function submitSurvey($postdata) {
+
+		if (!isset($postdata['surveyId']) || !isset($postdata['answers'])) {
+			return ['success' => false, 'message' => 'Invalid survey data'];
+		}
 		
-		$apiUrl = $this->helper->getApiBaseUrl() . '/v1/survey/submit';
+		$apiUrl = $this->helper->getApiBaseUrl() . '/v1/surveys/' . $postdata['surveyId'];
 		
 		$clientKey = $this->scopeConfig->getValue('authkeys/clientkey/clientpubkey');
 		$clientSecret = $this->scopeConfig->getValue('authkeys/clientkey/clientsecret');
@@ -61,18 +65,13 @@ class Submitsurvey extends Action
 		$headers = [
 			"Content-Type: application/json",
 			"clientKey: " . $clientKey,
-			"clientSecret: " . $clientSecret
+			"clientSecret: " . $clientSecret,
+			"externalId: " . $this->customerSession->getCustomerId()
 		];
 		
 		$body = [
-			'surveyId' => $postdata['surveyId'],
-			'userId' => $this->customerSession->getCustomerId() ?? null,
-			'handle' => $this->customerSession->getCustomer()->getData('contestio_pseudo') ?? "",
 			'answers' => $postdata['answers'],
 		];
-
-		// Encode the body data as JSON
-		$jsonBody = json_encode($body);
 		
 		$curl = curl_init();
 		curl_setopt_array($curl, array(
@@ -84,28 +83,23 @@ class Submitsurvey extends Action
 		  CURLOPT_FOLLOWLOCATION => true,
 		  CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
 		  CURLOPT_CUSTOMREQUEST => 'POST',
-		  CURLOPT_POSTFIELDS =>$jsonBody,
+		  CURLOPT_POSTFIELDS => json_encode($body),
 		  CURLOPT_HTTPHEADER =>$headers,
 		));
 
 		$response = curl_exec($curl);
+		$httpStatus = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+		curl_close($curl);
 
-		$data = json_decode($response, true);
-		
-		if (isset($data['message'])) {
-			$data = array(
-				'success' => isset($data['error']) ? 'false' : 'true', // Add success key to the response (true or false
-				'message' => $data['message'],
-				'alreadyParticipated' => isset($data['alreadyParticipated']) ? $data['alreadyParticipated'] : null
-			);
-		} else {
-			$data = array(
-				'success' => 'false',
-				'message' => isset($data['error']) ? $data['error'] : 'Une erreur s\'est produite'
-			);
-		}
+		$decoded = json_decode($response, true);
 
-		if (json_last_error() === JSON_ERROR_NONE) {
+		$data = array(
+			'success' => $httpStatus === 201,
+			'message' => isset($decoded['message']) ? $decoded['message'] : ($httpStatus === 201 ? 'Survey submitted successfully' : 'An error occurred'),
+			'alreadyParticipated' => isset($decoded['alreadyParticipated']) ? $decoded['alreadyParticipated'] : null
+		);
+
+		if ($httpStatus === 201 || json_last_error() === JSON_ERROR_NONE) {
 			return $data;
 		}
 

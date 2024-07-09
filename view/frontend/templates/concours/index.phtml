@@ -24,9 +24,19 @@ $pageUrl = $this->getUrl('contestio/concours');
 $sortBy = 'likes';
 $orderBy = 'desc';
 
+if (isset($_GET['sortBy']) && $_GET['sortBy']) {
+	$sortBy = $_GET['sortBy'];
+}
+if (isset($_GET['orderBy']) && $_GET['orderBy']) {
+	$orderBy = $_GET['orderBy'];
+}
+
+$selectedValue = "sortBy={$sortBy}&orderBy={$orderBy}";
+
 try {
-	$navButtons = $block->fetchNavButtons();
-	$contestData = $block->fetchContentData();
+	$navDatas = $block->buttonsAndUser();
+	$navButtons = isset($navDatas['buttons']) ? $navDatas['buttons'] : [];
+	$contestData = $block->fetchContentData($sortBy, $orderBy);
 	$isloggedin = $block->isCustomerLoggedIn();
 
 	if (isset($contestData['code']) && $contestData['code'] == 'AUTH_401') {
@@ -42,20 +52,11 @@ try {
 	}
 
 	if ($isloggedin) {
-		$customer = $block->getCustomerData();	
+		$customer = $block->getCustomerData();
+		$handle = isset($navDatas['pseudo']) ? $navDatas['pseudo'] : null;
 		$userIdToCheck = $customer['customer_id'];
-		$handle = $customer['customer_nickname'];
 		$firstname = $customer['customer_fname'];
 	}
-	
-	if (isset($_GET['sortBy']) && $_GET['sortBy']) {
-		$sortBy = $_GET['sortBy'];
-	}
-	if (isset($_GET['orderBy']) && $_GET['orderBy']) {
-		$orderBy = $_GET['orderBy'];
-	}
-
-	$selectedValue = "sortBy={$sortBy}&orderBy={$orderBy}";
 } catch (Exception $e) {
 	if ($e->getMessage() === 'Unauthorized') {
 		$authfailed = 1;
@@ -546,10 +547,15 @@ if ($serverError) {
 				<!-- Print contest -->
 				<?php elseif($row['type'] === 'contest'): ?>
 					<?php 
-						$contestIdToCheck = $row['_id'];
-						$contestData = $block->fetchContentDataById($contestIdToCheck, $sortBy, $orderBy);
-						$participantsByContest = [];
-						$participantsDataByContest = [];					
+						// $contestIdToCheck = $row['_id'];
+						// $contestData = $block->fetchContentDataById($contestIdToCheck, $sortBy, $orderBy);
+						$contestData = $row;
+
+						// Skip if contest not found
+						if (!$contestData || empty($contestData)) {
+							continue;
+						}
+				
 						$contestId = $contestData['_id'];
 					?>
 
@@ -891,6 +897,14 @@ require(['jquery'], function($) {
 	// Init scroll position
 	let lastScrollTop = 0;
 
+	
+	// Listen on #participFile change and update the dialog
+	const canvas = document.getElementById('imageCanvas');
+	const ctx = canvas.getContext('2d');
+	const cropArea = document.getElementById('cropArea');
+	const croppedImage = document.getElementById('croppedImage');
+	const canvasContainer = document.getElementById('canvas_container');
+
 	// ! See participation modal
 	// Close Modal for participation
 	$('.closeModalParticipation').click(function(){
@@ -900,8 +914,6 @@ require(['jquery'], function($) {
 
     // Remove class from main container
     $('.contestio-main-container').removeClass('contestio_overlay_open');
-
-		console.log('lastScrollTop', lastScrollTop);
 
     // Scroll to the last scroll position
     $(window).scrollTop(lastScrollTop);
@@ -1138,6 +1150,19 @@ require(['jquery'], function($) {
 			return false;
 		<?php endif; ?>
 
+		// Reset button text
+		$('#dialogParticipForm button[type="submit"]').text('Participer').attr('disabled', false);
+
+		// Reset cropper
+		croppedImage.src = '';
+		croppedImage.classList.add('hidden');
+
+		// Clear the canvas
+		ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+		// Clear the response message
+		$('#dialogParticipForm .response').html('');
+
 		// Update .contestId value
 		$('#dialogParticipForm').find('.contestId').val($(this).attr('contestid'));
 
@@ -1197,7 +1222,7 @@ require(['jquery'], function($) {
 				$(document).find('#dialogParticipation').addClass('reload');
 				$('body').trigger('processStop');
 
-				if(data.success === 'true') {
+				if (data.success === true) {
 					const currentValue = parseInt($(document).find('#dialogParticipation .postLikes').text());
 
 					// Show the time left
@@ -1208,7 +1233,7 @@ require(['jquery'], function($) {
 					// Remove canLike class
 					likeImg.classList.remove('canLike');
 
-					if(data.status == 400) {
+					if (data.status === 400) {
 						$(document).find('#dialogParticipation .response').html('<b class="error">'+data.message+'</b>');
 					} else {
 						$(document).find('#dialogParticipation button[type="submit"]').text('Vote ajouté');
@@ -1227,7 +1252,8 @@ require(['jquery'], function($) {
 						$(document).find('#dialogParticipation button[type="submit"]').prop('disabled', true);
 					}
 				} else {
-					$(document).find('#dialogParticipation .response').html("<b class='error'>Nous rencontrons un problème, veuillez réessayer plus tard.</b>");
+					const message = data.message ? data.message : 'Nous rencontrons un problème, veuillez réessayer plus tard.';
+					$(document).find('#dialogParticipation .response').html("<b class='error'>"+message+"</b>");
 				}
 			},
 			error: function(error) {
@@ -1245,12 +1271,6 @@ require(['jquery'], function($) {
 		$('#participFile').click();
 	});
 
-	// Listen on #participFile change and update the dialog
-	const canvas = document.getElementById('imageCanvas');
-	const ctx = canvas.getContext('2d');
-	const cropArea = document.getElementById('cropArea');
-	const croppedImage = document.getElementById('croppedImage');
-	const canvasContainer = document.getElementById('canvas_container');
 
 	let cropper = {
 		startX: 0,
@@ -1396,6 +1416,7 @@ require(['jquery'], function($) {
 		});
 	});
 
+	// Listen on #participFile change and update the dialog (cropper)
 	$(document).on('change', '#participFile', function() {
     const file = $(this)[0].files[0];
 
@@ -1428,9 +1449,10 @@ require(['jquery'], function($) {
 		$('#dialogParticipForm').find('.loading_part').removeClass('hidden');
 
     const reader = new FileReader();
-
 		const formData = new FormData();
+
 		formData.append('image', file);
+		formData.append('contestId', $('#dialogParticipForm .contestId').val());
 
     $.ajax({
 			url: "<?= $block->getUrl('contestio/ajax/checkimage') ?>",
@@ -1623,11 +1645,11 @@ require(['jquery'], function($) {
 
 		// Draw the cropped image on the new canvas using the actual dimensions
 		croppedCtx.drawImage(
-				img,
-				actualCropX, actualCropY, // Start cropping from these coordinates
-				actualCropWidth, actualCropHeight, // Crop this width and height
-				0, 0, // Place the cropped part at (0, 0) in the new canvas
-				actualCropWidth, actualCropHeight // Resize the cropped part to fit the new canvas
+			img,
+			actualCropX, actualCropY, // Start cropping from these coordinates
+			actualCropWidth, actualCropHeight, // Crop this width and height
+			0, 0, // Place the cropped part at (0, 0) in the new canvas
+			actualCropWidth, actualCropHeight // Resize the cropped part to fit the new canvas
 		);
 
 		// hide .canvas_container
@@ -1636,6 +1658,11 @@ require(['jquery'], function($) {
 		const croppedImageDataUrl = croppedCanvas.toDataURL('image/webp');
 		croppedImage.src = croppedImageDataUrl;
 		croppedImage.classList.remove('hidden');
+
+		if (croppedImage.src === '' || croppedImage.src === 'data:,') {
+			$(this).find('.response').html('<b class="error">Veuillez sélectionner une photo à télécharger.</b>');
+			return false;
+		}
 
 		const button = $(document).find('#dialogParticipForm button[type="submit"]');
 
@@ -1657,7 +1684,6 @@ require(['jquery'], function($) {
 				contentType: false,
 				dataType: "json",
 				success: function(data) {
-					console.log(data);
 					button.text('Participer');
 					button.prop('disabled', false);
 
@@ -1667,8 +1693,8 @@ require(['jquery'], function($) {
 						$(document).find('#dialogParticipForm .response').html(
 							data.error ? '<b class="error">'+data.message+'</b>' : '<b class="success">'+data.message+'</b>'
 						);
-						$(document).find('#dialogParticipForm').addClass('reload');
 
+						$(document).find('#dialogParticipForm').addClass('reload');
 
 						if (!data.error) {
 							// Remove .full-width div
@@ -1677,6 +1703,10 @@ require(['jquery'], function($) {
 							// Disable the button
 							button.prop('disabled', true);
 							button.text('Participation ajoutée');
+						} else {
+							// Enable the button
+							button.prop('disabled', false);
+							button.text('Participer');
 						}
 
 					} else {
@@ -1763,15 +1793,12 @@ require(['jquery'], function($) {
 			},
 			dataType: "json",
 			success: function(data) {
-				if(data.success == 'true') {
-					if(data.status == 400) {
-						$(document).find('#updateParticipForm .response').html('<b class="error">'+data.message+'</b>');
-					} else {
-						$(document).find('#updateParticipForm button[type="submit"]').text('Participation modifiée');
-
-						// Disable the button
-						$(document).find('#updateParticipForm button[type="submit"]').prop('disabled', true);
-					}
+				if (data.success === true) {
+					// Disable the button and change the text
+					$(document).find('#updateParticipForm button[type="submit"]').prop('disabled', true);
+					$(document).find('#updateParticipForm button[type="submit"]').text('Participation modifiée');
+				} else if (data.message) {
+					$(document).find('#updateParticipForm .response').html('<b class="error">'+data.message+'</b>');
 				} else {
 					$(document).find('#updateParticipForm .response').html("<b class='error'>Nous rencontrons un problème, veuillez réessayer plus tard.</b>");
 				}
@@ -1815,14 +1842,12 @@ require(['jquery'], function($) {
 			},
 			dataType: "json",
 			success: function(data) {
-				if(data.success == 'true') {
-					if(data.status == 400) {
-						$(document).find('#dialogDelete .response').html('<b class="error">'+data.message+'</b>');
-					} else {
-						// Disable the button
-						$(document).find('#dialogDelete button#deleteButton').prop('disabled', true);
-						$(document).find('#dialogDelete button#deleteButton').text('Participation supprimée');
-					}
+				if (data.success === true) {
+					// Disable the button
+					$(document).find('#dialogDelete button#deleteButton').prop('disabled', true);
+					$(document).find('#dialogDelete button#deleteButton').text('Participation supprimée');
+				} else if (data.message) {
+					$(document).find('#dialogDelete .response').html('<b class="error">'+data.message+'</b>');
 				} else {
 					$(document).find('#dialogDelete .response').html("<b class='error'>Nous rencontrons un problème, veuillez réessayer plus tard.</b>");
 				}

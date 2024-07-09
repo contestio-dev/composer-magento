@@ -239,9 +239,12 @@
     // Set cookie to remember user clicked on register button
     $('#custom-register').click(function(e) {
       var expirationDate = new Date();
-      expirationDate.setFullYear(expirationDate.getFullYear() + 2);
+
+      expirationDate.setTime(expirationDate.getTime() + (24 * 60 * 60 * 1000)); // 24 hours
+  
       document.cookie = "contestioclub=true; expires=" + expirationDate.toUTCString() + "; path=/";
-      var regUrl = "<?php echo $block->getUrl('customer/account/create') ?>";
+
+      const regUrl = "<?php echo $block->getUrl('customer/account/create') ?>";
       window.location.href = regUrl;
     });
 

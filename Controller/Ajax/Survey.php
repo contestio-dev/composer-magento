@@ -43,6 +43,13 @@ class Survey extends Action
 
 	public function execute() {
 		$surveyId = $this->getRequest()->getPost('surveyId');
+
+		if (!$surveyId) {
+			// Create JSON response
+			$resultJson = $this->resultJsonFactory->create();
+			return $resultJson->setData(['error' => 'Invalid survey ID']);
+		}
+
 		$surveyDetails = $this->fetchSurveyDetails($surveyId);
 		
 		// Create JSON response
@@ -51,7 +58,7 @@ class Survey extends Action
 	}
 
   public function fetchSurveyDetails($surveyId) {
-		$apiUrl = $this->helper->getApiBaseUrl() . '/v1/survey/details';
+		$apiUrl = $this->helper->getApiBaseUrl() . '/v1/surveys/' . $surveyId;
 		
 		$clientKey = $this->scopeConfig->getValue('authkeys/clientkey/clientpubkey');
 		$clientSecret = $this->scopeConfig->getValue('authkeys/clientkey/clientsecret');
@@ -59,17 +66,9 @@ class Survey extends Action
 		$headers = [
 			"Content-Type: application/json",
 			"clientKey: " . $clientKey,
-			"clientSecret: " . $clientSecret
+			"clientSecret: " . $clientSecret,
+			"externalId: " . $this->customerSession->getCustomerId(),
 		];
-		
-		$body = [
-			"surveyId" => $surveyId,
-			"userId" => $this->customerSession->getCustomerId() ?? null,
-			"handle" => $this->customerSession->getCustomer()->getData('contestio_pseudo') ?? ""
-		];
-		
-		// Encode the body data as JSON
-		$jsonBody = json_encode($body);
 		
 		$curl = curl_init();
 		curl_setopt_array($curl, array(
@@ -81,19 +80,19 @@ class Survey extends Action
 		  CURLOPT_FOLLOWLOCATION => true,
 		  CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
 		  CURLOPT_CUSTOMREQUEST => 'GET',
-		  CURLOPT_POSTFIELDS =>$jsonBody,
+		  CURLOPT_POSTFIELDS => '',
 		  CURLOPT_HTTPHEADER =>$headers,
 		));
 
 		$response = curl_exec($curl);
+		curl_close($curl);
+		$decoded = json_decode($response, true);
 
-		$data = json_decode($response, true);
-		
-		if (isset($data['_id'])) {
-			$data = array('success' => 'true', "data" => $data);
-		} else {
-			$data = array('success' => 'false', "data" => $data);
-		}
+		$data = array(
+			'success' => !!isset($decoded['_id']), 
+			'data' => $decoded,
+			'message' => isset($decoded['message']) ? $decoded['message'] : null
+		);
 
 		if (json_last_error() === JSON_ERROR_NONE) {
 			return $data;

@@ -44,34 +44,28 @@ class EditParticipation extends Action
 
 	public function execute() {
 		$postdata = $this->getRequest()->getPostValue();
+
+		if (!isset($postdata['contestId'])) {
+			return $this->resultJsonFactory->create()->setData(['success' => false]);
+		}
 	
-		$apiUrl = $this->helper->getApiBaseUrl() . '/v1/contest/participation/edit';
+		$apiUrl = $this->helper->getApiBaseUrl() . '/v1/participation/' . $postdata['contestId'];
 		
 		$clientKey = $this->scopeConfig->getValue('authkeys/clientkey/clientpubkey');
 		$clientSecret = $this->scopeConfig->getValue('authkeys/clientkey/clientsecret');
 		
-		$headers = [
-			"Content-Type: application/json",
-			"clientKey: " . $clientKey,
-			"clientSecret: " . $clientSecret
-		];
-
 		/** @var CustomerInterface $customer */
 		$customer = $this->customerSession->getCustomer();
 
-		if (!$customer) {
-			return $this->resultJsonFactory->create()->setData(['success' => 'false']);
-		}
-
-		// Get user data from the session
-		$userId = $customer->getId();
-		$handle = $customer->getData('contestio_pseudo');
+		$headers = [
+			"Content-Type: application/json",
+			"clientKey: " . $clientKey,
+			"clientSecret: " . $clientSecret,
+			"externalId: " . $customer->getId()
+		];
 		
 		$body = [
-			'userId' => $userId,
-			'handle' => $handle,
-			'contestId' => $postdata['contestId'],
-			'description' => $postdata['description']
+			'description' => $postdata['description'] ?? '',
 		];
 
 		// Encode the body data as JSON
@@ -95,23 +89,22 @@ class EditParticipation extends Action
 		$httpStatus = curl_getinfo($curl, CURLINFO_HTTP_CODE);
 		curl_close($curl);
 
-		$data = json_decode($response, true);
-		
-		if (isset($data['message'])) {
-			$data = array(
-				'success' => 'true',
-				'message' => $data['message'],
-				'status' => $httpStatus
-			);
-		} else {
-			$data = array('success' => 'false');
+		$decoded = json_decode($response, true);
+
+		$data = array(
+			'success' => $httpStatus === 200
+		);
+
+		if ($httpStatus !== 200) {
+			$data['error'] = true;
+			$data['message'] = isset($decoded['message']) ? $decoded['message'] : 'Une erreur est survenue';
 		}
 
-		if (json_last_error() === JSON_ERROR_NONE) {
+		if ($httpStatus === 200 || json_last_error() === JSON_ERROR_NONE) {
 			return $this->resultJsonFactory->create()->setData($data);
 		}
 
 		// Return false if unable to decode JSON
-		return $this->resultJsonFactory->create()->setData(['success' => 'false']);
+		return $this->resultJsonFactory->create()->setData(['success' => false]);
 	}
 }

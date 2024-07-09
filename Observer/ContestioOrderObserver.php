@@ -84,17 +84,25 @@ class ContestioOrderObserver implements ObserverInterface
 
             $customerId = $order->getCustomerId();
             if ($customerId) {
-                $customer = $this->customerRepository->getById($customerId);
-                $from_contestio = $customer->getCustomAttribute('from_contestio');
-                if ($from_contestio && $from_contestio->getValue() === '1') {
-                    $payload = [
-                        'userId' => $customerId,
-                        'amount' => $order->getSubtotal(),
-                        'currency' => $order->getOrderCurrencyCode()
-                    ];
+                // $customer = $this->customerRepository->getById($customerId);
+                // $from_contestio = $customer->getCustomAttribute('from_contestio');
+                // if ($from_contestio && $from_contestio->getValue() === '1') {
+                //     $payload = [
+                //         'userId' => $customerId,
+                //         'amount' => $order->getSubtotal(),
+                //         'currency' => $order->getOrderCurrencyCode()
+                //     ];
 
-                    $this->postOrderData($payload);
-                }
+                //     $this->postOrderData($payload);
+                // }
+
+                $payload = [
+                    'userId' => $customerId,
+                    'amount' => $order->getSubtotal(),
+                    'currency' => $order->getOrderCurrencyCode()
+                ];
+
+                $this->postOrderData($payload);
             }
         } catch (\Exception $e) {
             return;
@@ -117,7 +125,8 @@ class ContestioOrderObserver implements ObserverInterface
         $headers = [
             "Content-Type: application/json",
             "clientKey: " . $clientKey,
-            "clientSecret: " . $clientSecret
+            "clientSecret: " . $clientSecret,
+            "externalId: " . $payload['userId'], // API check if the user exists and is from Contestio
         ];
 
         // Encode the body data as JSON

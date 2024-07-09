@@ -1,0 +1,150 @@
+.contestio-row [class*="contestio-col-"] {
+  box-sizing: border-box;
+  min-height: 1px;
+  position: relative;
+  width: 100%;
+  padding-left: 15px;
+  padding-right: 15px;
+
+  // Responsive less padding
+  @media (max-width: 767px) {
+    padding-left: 10px;
+    padding-right: 10px;
+    max-width: 100%;
+  }
+}
+
+.contestio-row {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex-wrap: wrap;
+  flex-wrap: wrap;
+  margin-left: -15px;
+  margin-right: -15px;
+
+  // Flex columns for mobile
+  @media (max-width: 767px) {
+    flex-direction: column;
+  }
+}
+
+.contestio-justify-content-end {
+  -webkit-box-pack: end;
+  -ms-flex-pack: end;
+  justify-content: flex-end;
+}
+
+.contestio-justify-content-center {
+  -webkit-box-pack: center;
+  -ms-flex-pack: center;
+  justify-content: center;
+}
+
+.contestio-align-items-center {
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+}
+
+//
+// Flex columns for mobile
+// ----------------------------------------------
+
+.contestio-heading {
+  font-size: 24px;
+  font-weight: bold;
+  color: var(--contestio-black);
+  margin: 0px 0px 15px 0px;
+  line-height: 1.5;
+
+  &.heading-center {
+    text-align: center;
+  }
+
+  > span {
+    color: var(--contestio-primary);
+  }
+}
+.contestio-text-box {
+  color: var(--contestio-black);
+  font-size: 15px;
+  font-weight: normal;
+
+  margin-right: 4rem;
+
+  // Reset margin
+  * {
+    margin: 0;
+  }
+
+  // No margin right on mobile
+  @media (max-width: 769px) {
+    margin-right: 0;
+  }
+}
+.contestio-img-box {
+  img {
+    display: block;
+    width: 100%;
+    height: auto;
+
+    // Center and smaller on mobile
+    @media (max-width: 769px) {
+      width: 80%;
+      margin: 0 auto;
+    }
+  }
+}
+.contestio-section  {
+  position: relative;
+  width: 100%;
+}
+
+.gap-44 {
+  padding-top: 44px;
+  padding-bottom: 44px
+}
+.gap-bottom-none {
+  padding-bottom: 0
+}
+.gap-top-35 {
+  padding-top: 35px
+}
+.gap-top-44 {
+  padding-top: 44px
+}
+.gap-bottom-35 {
+  padding-bottom: 35px
+}
+.gap-bottom-20 {
+  padding-bottom: 20px
+}
+.gap-top-20 {
+  padding-bottom: 20px
+}
+.hidden {
+  display: none !important;
+}
+
+.contestio-hr {
+  max-width: 804px;
+  margin: 0 auto;
+  display: block;
+  clear: both;
+  border: none;
+  height: 1px;
+  background: var(--contestio-grey-100);
+}
+.full-heading-section {
+  .contestio-heading {
+    margin-bottom: 0
+  }
+}
+
+.competition-items-section {
+  .contestio-row [class*="contestio-col-"] {
+    padding-top: 15px;
+    padding-bottom: 15px
+  }
+}

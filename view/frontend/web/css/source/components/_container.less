@@ -1,0 +1,92 @@
+// Main container of contestio plugin with thin border and white background
+.contestio-main-container {
+  position: relative;
+  background: var(--contestio-white);
+  width: 100%;
+  padding: 40px;
+  border: solid 1px var(--contestio-grey-100);
+  border-radius: 10px;
+  box-sizing: border-box;
+
+  // Max height and block scroll on overlay open (modal)
+  &.contestio_overlay_open {
+    min-height: 400px;
+    height: 70vh;
+    max-height: 800px;
+    overflow: hidden;
+  }
+
+  // Error page with image, title and report link
+  &.error-page {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    background-color: #f8f9fa;
+  
+    // Trending up image
+    img {
+      margin: 0 20px;
+      width: 100%;
+      max-width: 300px;
+    }
+  
+    h3 {
+      font-size: 2.5rem;
+      color: #000;
+      margin: 0 0 1rem 0;
+      text-align: center;
+    }
+  
+    p {
+      font-size: 1.5rem;
+      color: #000;
+      margin: 0;
+      text-align: center;
+    }
+  
+    a {
+      text-align: center;
+      margin-top: 20px;
+  
+      font-size: 1.2rem;
+      font-weight: 700;
+    }
+  }
+
+  // Main content of contestio plugin (child of main container)
+  .contestio-main-content {
+    width: 100%;
+    max-width: 1000px;
+    margin: 0 auto;
+    &:after,
+    &:before {
+      content: "";
+      display: table;
+    }
+    &:after {
+      clear: both;
+    }
+
+    // Gap top 35px on mobile
+    .media-width(@extremum, @break) when (@extremum = 'max') and (@break = @screen__m) {
+      &.gap-top-35 {
+        padding-top: 0;
+      }
+    }
+  }
+
+  // Responsive styles
+  // ----------------------------------------------
+
+  // For tablet
+  @media (max-width: 1023px) and (min-width: 768px) {
+    padding: 20px;
+  }
+
+  // For mobile
+  @media (max-width: 767px) {
+    padding: 15px;
+  }
+}

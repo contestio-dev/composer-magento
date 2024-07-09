@@ -102,7 +102,7 @@ class FinalUser extends Action
             return $resultJson->setData(['success' => false, 'message' => 'Invalid user pseudo']);
         }
 
-        $apiUrl = $this->helper->getApiBaseUrl() . '/v1/user';
+        $apiUrl = $this->helper->getApiBaseUrl() . '/v1/users/final/upsert';
         
         $clientKey = $this->scopeConfig->getValue('authkeys/clientkey/clientpubkey');
         $clientSecret = $this->scopeConfig->getValue('authkeys/clientkey/clientsecret');
@@ -113,17 +113,12 @@ class FinalUser extends Action
             "clientSecret: " . $clientSecret
         ];
 
-        $fromContestio = $customer->getCustomAttribute('from_contestio') && $customer->getCustomAttribute('from_contestio')->getValue() === 1
-            ? true
-            : false;
-
         $body = [
             'externalId' => $customer->getId(),
             'email' => $customer->getEmail(),
             'pseudo' => $postdata['handle'],
             'fname' => $customer->getFirstName(),
-            'lname' => $customer->getLastName(),
-            'isFromContestio' => $fromContestio,
+            'lname' => $customer->getLastName()
         ];
 
         // Encode the body data as JSON
@@ -147,16 +142,20 @@ class FinalUser extends Action
         $httpStatus = curl_getinfo($curl, CURLINFO_HTTP_CODE);
         curl_close($curl);
         
-        if ($httpStatus == 200) {
+        if ($httpStatus === 200 || $httpStatus === 201) {
             // Customer data has been successfully synced
 
-            // Update the contestio_pseudo attribute
-            $customer->setCustomAttribute('contestio_pseudo', $postdata['handle']);
-            $this->customerRepository->save($customer);
-
-            return $resultJson->setData(['success' => true, 'message' => 'Sync with success', 'response' => json_decode($response, true)]);
+            return $resultJson->setData([
+                'success' => true,
+                'message' => 'Sync with success',
+                'response' => json_decode($response, true)
+            ]);
         } else {
-            return $resultJson->setData(['success' => false, 'message' => 'Error sync user', 'response' => json_decode($response, true)]);
+            return $resultJson->setData([
+                'success' => false,
+                'message' => 'Error sync user',
+                'response' => json_decode($response, true)
+            ]);
         }
     }
 }

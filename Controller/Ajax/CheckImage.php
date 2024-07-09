@@ -58,7 +58,16 @@ class CheckImage extends Action
 	}
 
   public function execute() {
-		$uploadImgApiUrl = $this->helper->getApiBaseUrl() . '/v1/checkImage';
+		$postdata = $this->getRequest()->getPostValue();
+
+		if (!isset($postdata['contestId'])) {
+			return $this->resultJsonFactory->create()->setData([
+				'success' => false,
+				'message' => 'Identifiant de concours manquant.'
+			]);
+		}
+
+		$uploadImgApiUrl = $this->helper->getApiBaseUrl() . '/v1/participation/check-image/' . $postdata['contestId'];
 		$clientKey = $this->scopeConfig->getValue('authkeys/clientkey/clientpubkey');
 		$clientSecret = $this->scopeConfig->getValue('authkeys/clientkey/clientsecret');
 		
@@ -66,7 +75,10 @@ class CheckImage extends Action
 		if(!empty($_FILES['image']['tmp_name'])) {
 			$path = $_FILES['image']['tmp_name'];
 		} else {
-			return $this->resultJsonFactory->create()->setData(['success' => 'false', 'message' => 'Aucune image trouvée, veuillez réessayer.']);
+			return $this->resultJsonFactory->create()->setData([
+				'success' => false,
+				'message' => 'Aucune image trouvée, veuillez réessayer.'
+			]);
 		}
 		
 		$file = new \CURLFile($path);
@@ -75,7 +87,8 @@ class CheckImage extends Action
 		
 		$headers = [
 			"clientKey: " . $clientKey,
-			"clientSecret: " . $clientSecret
+			"clientSecret: " . $clientSecret,
+			"externalId: " . $this->customerSession->getCustomer()->getId(),
 		];
 
 		curl_setopt_array($curl, array(
@@ -92,21 +105,11 @@ class CheckImage extends Action
 		));
 	
 		$response = curl_exec($curl);
-
-    if (curl_errno($curl)) {
-        $error_msg = curl_error($curl);
-        curl_close($curl);
-        return $this->resultJsonFactory->create()->setData([
-            'success' => false,
-            'message' => 'Une erreur est survenue lors de la requête cURL: ' . $error_msg,
-            'error' => true,
-        ]);
-    }
-
+		$httpStatus = curl_getinfo($curl, CURLINFO_HTTP_CODE);
     $contentType = curl_getinfo($curl, CURLINFO_CONTENT_TYPE);
     curl_close($curl);
 
-    if (strpos($contentType, 'application/octet-stream') !== false) {
+    if ($httpStatus === 201 && strpos($contentType, 'image/webp') !== false) {
         // Image binary response
         $response = base64_encode($response); // Encode the binary data in base64 to send it via JSON
         return $this->resultJsonFactory->create()->setData([
@@ -118,8 +121,10 @@ class CheckImage extends Action
         $data = json_decode($response, true);
         return $this->resultJsonFactory->create()->setData([
             'success' => false,
-            'message' => isset($data['message']) ? $data['message'] : 'Une erreur est survenue lors de l\'envoi de l\'image, veuillez réessayer.',
             'error' => true,
+						'httpStatus' => $httpStatus,
+						'contentType' => $contentType,
+            'message' => isset($data['message']) ? $data['message'] : 'Une erreur est survenue lors de l\'envoi de l\'image, veuillez réessayer.',
         ]);
     }
 		

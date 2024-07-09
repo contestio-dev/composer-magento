@@ -1,0 +1,218 @@
+// Participation modal
+&.twoPart {
+  display: grid;
+  grid-template-columns: repeat(20, 1fr);
+  // grid-template-rows: 1fr; // auto 1fr
+  gap: 1rem;
+
+  // Two line on mobile
+  @media (max-width: 768px) {
+    display: flex;
+    flex-direction: column;
+  }
+
+  // Larger
+  max-width: 800px;
+  height: auto;
+  overflow-x: hidden;
+  padding: 2rem;
+
+  // Responsive for mobile
+  @media (max-width: 768px) {
+    width: 90%;
+    max-width: 400px;
+    padding: 1rem;
+  }
+
+  // First part with image or cropper
+  .firstPart {
+    grid-row: 1;
+    grid-column: span 10;
+
+    // Full width on mobile
+    @media (max-width: 768px) {
+      width: 100%;
+      grid-column: unset;
+    }
+
+    position: relative;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    img.placeholderImage {
+      max-width: 400px;
+      max-height: 400px;
+
+      width: 100%;
+      height: auto;
+
+      object-fit: contain;
+
+      border-radius: 10px;
+
+      // For tablet: 400px
+      @media (max-width: 1024px) {
+        max-width: 350px;
+        max-height: 350px;
+      }
+
+      // For mobile: 300px
+      @media (max-width: 768px) {
+        max-width: 300px;
+        max-height: 300px;
+      }
+    }
+
+    // Final cropped image
+    #croppedImage,
+    .partImage {
+      width: 90%;
+      height: auto;
+
+      margin: auto;
+
+      object-fit: contain;
+      border-radius: 10px;
+
+      box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.1);
+
+      // Smaller on mobile
+      @media (max-width: 768px) {
+        width: 50%;
+      }
+    }
+
+    .selectImg {
+      width: 150px;
+      height: 150px;
+      border-radius: 20px;
+      border: 2px solid var(--contestio-primary);
+      background-color: rgba(255, 255, 255, 0.75);
+      color: var(--contestio-grey-300);
+      z-index: 150;
+      transition: all 0.3s ease;
+
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+
+      img {
+        width: 70px;
+        height: 70px;
+        transition: all 0.3s ease;
+      }
+
+      p:hover {
+        text-decoration: underline;
+      }
+
+      &:hover {
+        cursor: pointer;
+        background: rgba(255, 255, 255, 1);
+        border-radius: 30px;
+
+        img {
+          transform: scale(1.1);
+        }
+      }
+    }
+  }
+
+  // Second part with form
+  .secondPart {
+    grid-row: 1;
+    grid-column: span 10;
+
+    // Full width on mobile
+    @media (max-width: 768px) {
+      width: 100%;
+      grid-column: unset;
+    }
+
+    height: 100%;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+
+    button {
+      margin: 1rem auto;
+    }
+
+    p,
+    h2 {
+      width: 100%;
+      text-align: center;
+    }
+
+    p {
+      font-size: 1.4rem;
+      color: var(--contestio-grey-300);
+
+      &.time-left-msg {
+        width: auto;
+        margin: auto;
+        padding: 1rem 2rem;
+
+        font-weight: bold;
+        text-align: center;
+      }
+    }
+
+    h2 {
+      margin-bottom: 0.5rem;
+    }
+
+    .full-width {
+      width: 90%;
+      margin: 1rem auto;
+
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+
+      p:not(.postDescription) {
+        text-align: left;
+        width: 100%;
+      }
+    }
+
+    button[type="submit"] {
+      width: fit-content;
+      min-width: 50%;
+
+      &.danger {
+        background-color: var(--contestio-danger);
+      }
+    }
+
+    footer {
+      margin-top: 2rem;
+      width: 80%;
+
+      &.centered {
+        justify-content: center;
+      }
+
+      button {
+        margin: 0;
+      }
+    }
+  }
+}

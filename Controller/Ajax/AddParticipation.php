@@ -50,17 +50,26 @@ class AddParticipation extends Action
 	}
 
   public function execute() {
-		$uploadImgApiUrl = $this->helper->getApiBaseUrl() . '/v1/upload';
+    $postdata = $this->getRequest()->getPostValue();
+
+		if (!isset($postdata['contestId'])) {
+			return $this->resultJsonFactory->create()->setData(['success' => false]);
+		}
+
+		$apiUrl = $this->helper->getApiBaseUrl() . '/v1/participation/upload-image/' . $postdata['contestId'];
+		$path = '';
+
 		$clientKey = $this->scopeConfig->getValue('authkeys/clientkey/clientpubkey');
 		$clientSecret = $this->scopeConfig->getValue('authkeys/clientkey/clientsecret');
 		
-    $postdata = $this->getRequest()->getPostValue();
-
-		$path = '';
 		if(!empty($_FILES['image']['tmp_name'])) {
 			$path = $_FILES['image']['tmp_name'];
 		} else {
-			return $this->resultJsonFactory->create()->setData(['success' => 'false', 'error' => true, 'message' => 'Aucune image trouvée, veuillez réessayer.']);
+			return $this->resultJsonFactory->create()->setData([
+				'success' => false,
+				'error' => true,
+				'message' => 'Aucune image trouvée, veuillez réessayer.'
+			]);
 		}
 		
 		$file = new \CURLFile($path);
@@ -69,11 +78,12 @@ class AddParticipation extends Action
 		
 		$headers = [
 			"clientKey: " . $clientKey,
-			"clientSecret: " . $clientSecret
+			"clientSecret: " . $clientSecret,
+			"externalId: " . $this->customerSession->getCustomer()->getId(),
 		];
 
 		curl_setopt_array($curl, array(
-		  CURLOPT_URL => $uploadImgApiUrl,
+		  CURLOPT_URL => $apiUrl,
 		  CURLOPT_RETURNTRANSFER => true,
 		  CURLOPT_ENCODING => '',
 		  CURLOPT_MAXREDIRS => 10,
@@ -86,15 +96,17 @@ class AddParticipation extends Action
 		));
 	
 		$response = curl_exec($curl);
+		$httpStatus = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+		curl_close($curl);
 
 		$data = json_decode($response, true);
 		$imageUrl = "";
 		
-		if (isset($data['Key'])) {
+		if ($httpStatus === 201 && isset($data['Key'])) {
 			$imageUrl = $data['Key'];
 		} else {
 			return $this->resultJsonFactory->create()->setData([
-				'success' => 'false',
+				'success' => false,
 				'message' => isset($data['message']) ? $data['message'] : 'Une erreur est survenue lors de l\'envoi de l\'image, veuillez réessayer.',
 				'error' => true
 			]);
@@ -108,34 +120,28 @@ class AddParticipation extends Action
   }
 
 	public function submitContest($postdata, $imageUrl) {
-		$apiUrl = $this->helper->getApiBaseUrl() . '/v1/contest/participation/add';
+		$apiUrl = $this->helper->getApiBaseUrl() . '/v1/participation/' . $postdata['contestId'];
 		
 		$clientKey = $this->scopeConfig->getValue('authkeys/clientkey/clientpubkey');
 		$clientSecret = $this->scopeConfig->getValue('authkeys/clientkey/clientsecret');
 		
-		$headers = [
-			"Content-Type: application/json",
-			"clientKey: " . $clientKey,
-			"clientSecret: " . $clientSecret
-		];
-
 		/** @var CustomerInterface $customer */
 		$customer = $this->customerSession->getCustomer();
 
 		if (!$customer) {
-			return $this->resultJsonFactory->create()->setData(['success' => 'false']);
+			return $this->resultJsonFactory->create()->setData(['success' => false]);
 		}
 
-		// Get user data from the session
-		$userId = $customer->getId();
-		$handle = $customer->getData('contestio_pseudo');
+		$headers = [
+			"Content-Type: application/json",
+			"clientKey: " . $clientKey,
+			"clientSecret: " . $clientSecret,
+			"externalId: " . $customer->getId(),
+		];
 
 		$body = [
 			'description' => $postdata['description'],
-			'contestId' => $postdata['contestId'],
-			'imageUrl' => $imageUrl,
-			'userId' => $userId,
-			'handle' => $handle
+			'imageUrl' => $imageUrl
 		];
 
 		// Encode the body data as JSON
@@ -156,20 +162,26 @@ class AddParticipation extends Action
 		));
 
 		$response = curl_exec($curl);
+		$httpStatus = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+		curl_close($curl);
 
 		$data = json_decode($response, true);
 		
-		if (isset($data['message'])) {
+		if ($httpStatus === 201) {
 			$data = array(
-				'success' => 'true',
-				'message' => $data['message'],
-				'error' => !!isset($data['error'])
+				'success' => true,
+				'message' => isset($data['message']) ? $data['message'] : 'Votre participation a bien été enregistrée !',
+				'error' => false
 			);
 		} else {
-			$data = array('success' => 'false');
+			$data = array(
+				'success' => false,
+				'error' => true,
+				'message' => isset($data['message']) ? $data['message'] : 'Une erreur est survenue'
+			);
 		}
 
-		if (json_last_error() === JSON_ERROR_NONE) {
+		if ($httpStatus === 201 || json_last_error() === JSON_ERROR_NONE) {
 			return $data;
 		}
 

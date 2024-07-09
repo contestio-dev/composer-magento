@@ -16,7 +16,8 @@ $pseudo = null;
 $firstname = null;
 
 try {
-	$navButtons = $block->fetchNavButtons();
+	$navDatas = $block->buttonsAndUser();
+	$navButtons = isset($navDatas['buttons']) ? $navDatas['buttons'] : [];
 	$surveyData = $block->fetchSurveyData();
 
 	if (isset($surveyData['code']) && $surveyData['code'] == 'AUTH_401') {
@@ -30,7 +31,7 @@ try {
 
 	$isLogged = $block->isCustomerLoggedIn();
 	if ($isLogged) {
-		$pseudo = $block->getPseudo();
+		$pseudo = isset($navDatas['pseudo']) ? $navDatas['pseudo'] : null;
 		$firstname = $block->getFirstname();
 	}
 
@@ -205,7 +206,7 @@ if ($serverError) {
 
 			<!-- Survey preview -->
 			<?php if(isset($row['type']) && $row['type'] === 'survey'): ?>
-				<div class="contestio-section gap-44" orgId='<?= $row['orgId'] ?>'>
+				<div class="contestio-section gap-44">
 					<div class="contestio-row contestio-align-items-center">
 						<div class="contestio-col-12">
 							<!-- Survey name -->
@@ -422,14 +423,18 @@ require(['jquery'], function($) {
 					// Hide all footers
 					$('#dialogSurvey footer').addClass('hidden');
 
-					// Show footer.questions-footer
-					$('#dialogSurvey footer.questions-footer').removeClass('hidden');
+					// Show footer.questions-footer if more than 1 question
+					if (datas.questions.length > 1) {
+						$('#dialogSurvey footer.questions-footer').removeClass('hidden');
+					} else {
+						$('#dialogSurvey footer.modal-survey-end').removeClass('hidden');
+					}
 
 					// Show form
 					$('#dialogSurvey #surveyForm').removeClass('hidden');
 
 					// Create survey items
-					datas.questions.forEach((question, index) => {
+					datas.questions?.forEach((question, index) => {
 						const item = renderItem({
 							number: index + 1,
 							_id: question._id,
@@ -439,6 +444,8 @@ require(['jquery'], function($) {
 
 						$('#dialogSurvey #surveyForm').append(item);
 					});
+				} else if (data.message) {
+					$('#dialogSurvey .response').html(`<p class="error">${data.message}</p>`);
 				} else {
 					$('#dialogSurvey .response').html('<p class="error">Nous rencontrons un problème. Veuillez réessayer plus tard.</p>');
 				}

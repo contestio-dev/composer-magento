@@ -3,7 +3,7 @@ require(['jquery'], function($) {
     $.ajax({
       url: socialshareUrl,
       type: 'POST',
-      data: JSON.stringify({ platform, objectId }),
+      data: JSON.stringify({ platform, objectId, action: 'contest-sharing' }),
       contentType: 'application/json'
     });
   }

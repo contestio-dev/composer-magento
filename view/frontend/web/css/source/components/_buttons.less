@@ -1,0 +1,58 @@
+.contestio-btn-section {
+  padding-top: 15px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+
+  &.mt-1 {
+    margin-top: 1rem;
+  }
+
+  // Main button
+  .fill-link {
+    text-decoration: none;
+    color: var(--contestio-white);
+    background: var(--contestio-primary);
+    border: solid 1px var(--contestio-primary);
+    border-radius: 5px;
+    line-height: 1.466666666666667;
+    padding: 10px 15px;
+    box-sizing: border-box;
+    text-align: center;
+    font-weight: bold;
+    font-size: 15px;
+    
+    &:hover,
+    &:active,
+    &:focus {
+      border-color: var(--contestio-primary);
+      color: var(--contestio-primary);
+      background: var(--contestio-white);
+    }
+  }
+
+  .basic-button {
+    text-decoration: none;
+    color: var(--contestio-white);
+    background: var(--contestio-primary);
+
+    border: solid 2px var(--contestio-primary);
+    border-radius: 10px;
+
+    box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.1);
+
+    transition: all 0.3s ease-in-out;
+
+    padding: 1rem 2rem;
+
+    box-sizing: border-box;
+    text-align: center;
+    font-weight: bold;
+    font-size: 1.4rem;
+    
+    &:hover {
+      transform: scale(0.97);
+      box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.2);
+    }
+  }
+}

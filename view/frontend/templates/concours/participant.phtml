@@ -20,7 +20,9 @@ $firstname = null;
 try {
 	$participationid = $block->getData('participationid');
 	$contestData = $block->fetchParticipationById($participationid);
-	$navButtons = $block->fetchNavButtons();
+	
+	$navDatas = $block->buttonsAndUser();
+	$navButtons = isset($navDatas['buttons']) ? $navDatas['buttons'] : [];
 
 	if (isset($contestData['code'])) {
 		if ($contestData['code'] == 'AUTH_401') {
@@ -32,8 +34,8 @@ try {
 
 	$isLogged = $block->isCustomerLoggedIn();
 	if ($isLogged) {
-		$customer = $block->getCustomerData();	
-		$handle = $customer['customer_nickname'];
+		$customer = $block->getCustomerData();
+		$handle = isset($navDatas['pseudo']) ? $navDatas['pseudo'] : null;
 		$firstname = $customer['customer_fname'];
 	}
 
@@ -323,7 +325,7 @@ require(['jquery'], function($) {
 		$.ajax({
 			url: "<?php echo $block->getUrl('contestio/ajax/socialshare') ?>",
 			type: 'POST',
-			data: JSON.stringify({ platform, objectId }),
+			data: JSON.stringify({ platform, objectId, action: 'contest-sharing' }),
 			contentType: 'application/json'
 		});
 	}
@@ -401,8 +403,7 @@ require(['jquery'], function($) {
 			},
 			dataType: "json",
 			success: function(data) {
-				console.log(data);
-				if(data.success === 'true') {
+				if (data.success === true) {
 					const currentValue = parseInt($(document).find('#previewId .postLikes').text());
 
 					// Show the time left
@@ -413,7 +414,7 @@ require(['jquery'], function($) {
 					// Remove canLike class
 					likeImg.classList.remove('canLike');
 
-					if(data.status == 400) {
+					if (data.status === 400) {
 						$(document).find('#previewId .response').html('<b class="error">'+data.message+'</b>');
 					} else {
 						$(document).find('#previewId button[type="submit"]').text('Vote ajouté');
@@ -432,7 +433,8 @@ require(['jquery'], function($) {
 						$(document).find('#previewId button[type="submit"]').prop('disabled', true);
 					}
 				} else {
-					$(document).find('#previewId .response').html("<b class='error'>Nous rencontrons un problème, veuillez réessayer plus tard.</b>");
+					const message = data.message ? data.message : 'Nous rencontrons un problème, veuillez réessayer plus tard.';
+					$(document).find('#dialogParticipation .response').html("<b class='error'>"+message+"</b>");
 				}
 				$(document).find('#previewId').addClass('reload');
 				$('body').trigger('processStop');

@@ -1,0 +1,108 @@
+// /**
+//  * Copyright © Magento, Inc. All rights reserved.
+//  * See COPYING.txt for license details.
+//  */
+
+// Variables
+@import '_variables.less';
+
+// Common styles (base)
+@import 'base/_common.less';
+
+// Main container (components)
+@import 'components/_container.less';
+
+// Header (components)
+@import 'components/_header.less';
+
+// Footer (components)
+@import 'components/_footer.less';
+
+// Buttons (components)
+@import 'components/_buttons.less';
+
+// Competition item (components)
+@import 'components/_competition_item.less';
+
+// Modals (components)
+@import 'modals/_modals.less';
+
+// Concours (page)
+@import 'page/_concours.less';
+
+// Update Le Club button in navbar if icon
+.contestio-link.icon {
+	position: relative !important;
+	vertical-align: middle;
+
+	> a {
+		text-decoration: none;
+		display: flex !important;
+		align-items: center;
+		gap: 8px;
+
+		&::before {
+			content: "";
+			width: 24px;
+			height: 24px;
+			background-size: contain;
+			background-repeat: no-repeat;
+			display: block;
+		}
+	}
+
+	&.heart a::before {
+		background-image: url('../images/navbar/heart.svg');
+	}
+
+	&.heart-fill a::before {
+		background-image: url('../images/navbar/heart-fill.svg');
+	}
+
+	&.images a::before {
+		background-image: url('../images/navbar/images.svg');
+	}
+
+	&.newspaper a::before {
+		background-image: url('../images/navbar/newspaper.svg');
+	}
+
+	&.sparkles a::before {
+		background-image: url('../images/navbar/sparkles.svg');
+	}
+
+	&.star-fill a::before {
+		background-image: url('../images/navbar/star-fill.svg');
+	}
+
+	&.star a::before {
+		background-image: url('../images/navbar/star.svg');
+	}
+
+	&.users a::before {
+		background-image: url('../images/navbar/users.svg');
+	}
+}
+
+// Media for desktop
+@media (max-width: 1279px) and (min-width: 1024px) {
+	.contestio-heading {
+		font-size: 26px;
+	}
+	.contestio-text-box {
+		font-size: 14px;
+	}
+}
+
+// Media for tablet
+@media (max-width: 1023px) and (min-width: 768px) {
+	.contestio-heading {
+		font-size: 22px;
+	}
+	.contestio-text-box {
+		font-size: 14px;
+	}
+}
+
+// Media queries (base)
+@import 'base/_media.less';

@@ -1,0 +1,256 @@
+.openDialogLoginContainer {
+  width: 100%;
+
+  margin-top: 2rem;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+// Button for open order by modal
+.sortby-section {
+  width: auto;
+  padding: 1rem 2rem;
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  span {
+    font-size: 1.3rem;
+    font-weight: 700;
+  }
+
+  a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3rem;
+
+    img {
+      width: auto;
+      height: 1.3rem;
+      margin-left: 0.5rem;
+    }
+
+    &:active,
+    &:focus {
+      outline: none;
+      color: #006bb4;
+    }
+  }
+}
+
+.selectImg {
+  width: 150px;
+  height: 150px;
+  border-radius: 20px;
+  border: 2px solid var(--contestio-primary);
+  background-color: rgba(255, 255, 255, 0.75);
+  color: var(--contestio-grey-300);
+  z-index: 150;
+  transition: all 0.3s ease;
+
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+
+  img {
+    width: 70px;
+    height: 70px;
+    transition: all 0.3s ease;
+  }
+
+  p:hover {
+    text-decoration: underline;
+  }
+
+  &:hover {
+    cursor: pointer;
+    background: rgba(255, 255, 255, 1);
+    border-radius: 30px;
+
+    img {
+      transform: scale(1.1);
+    }
+  }
+}
+
+.crop_part {
+  position: relative;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+
+  height: auto;
+  width: 100%;
+
+  max-width: 400px;
+  max-height: 400px;
+
+  canvas {
+    width: auto;
+    height: 100%;
+
+    border-radius: 10px;
+
+    margin: auto;
+
+    &.isLandscape {
+      width: 100%;
+      height: auto;
+    }
+  }
+
+  .canvas_container {
+    position: relative;
+    display: flex;
+
+    width: auto;
+    height: 100%;
+
+    margin: auto;
+
+    &.isLandscape {
+      width: 100%;
+      height: auto;
+    }
+
+    #deleteImage {
+      position: absolute;
+      top: -1rem;
+      left: -1rem;
+      z-index: 999;
+      background: #fff;
+      border-radius: 50%;
+      border: none;
+      outline: none;
+
+      box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.1);
+
+      padding: 1rem;
+      cursor: pointer;
+
+      transition: all 0.3s ease-in-out;
+
+      &:hover {
+        background: #f1f1f1;
+      }
+    }
+  }
+}
+
+p.danger {
+  text-align: center !important;
+  font-weight: bold !important;
+  color: var(--contestio-danger) !important;
+}
+
+.crop-area {
+  position: absolute;
+  border: 2px dashed rgba(255, 255, 255, 0.5);
+  cursor: move;
+}
+
+.crop-area .resize-handle {
+  width: 10px;
+  height: 10px;
+  background: #000;
+  border-radius: 0;
+  position: absolute;
+  cursor: nwse-resize;
+}
+.resize-handle.ne {
+  right: -5px;
+  top: -5px;
+  // cursor: nesw-resize;
+  // Block resize
+  cursor: pointer;
+  pointer-events: none;
+}
+.resize-handle.se {
+  right: -5px;
+  bottom: -5px;
+  cursor: nwse-resize;
+  background-color: var(--contestio-primary);
+  border-radius: 2px;
+}
+.resize-handle.sw {
+  left: -5px;
+  bottom: -5px;
+  // cursor: nesw-resize;
+  // Block resize
+  cursor: pointer;
+  pointer-events: none;
+}
+.resize-handle.nw {
+  left: -5px;
+  top: -5px;
+
+  // Block resize
+  cursor: pointer;
+  pointer-events: none;
+}
+
+.loading_part {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+
+  // Text
+  p {
+    margin-top: 2rem;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--contestio-grey-500);
+  }
+
+  // Spinner
+  .loader {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    position: relative;
+    animation: rotate 1s linear infinite
+  }
+  .loader::before , .loader::after {
+    content: "";
+    box-sizing: border-box;
+    position: absolute;
+    inset: 0px;
+    border-radius: 50%;
+    border: 5px solid #FFF;
+    animation: prixClipFix 2s linear infinite ;
+  }
+  .loader::after{
+    transform: rotate3d(90, 90, 0, 180deg );
+    border-color: var(--contestio-primary);
+  }
+
+  @keyframes rotate {
+    0%   {transform: rotate(0deg)}
+    100%   {transform: rotate(360deg)}
+  }
+
+  @keyframes prixClipFix {
+      0%   {clip-path:polygon(50% 50%,0 0,0 0,0 0,0 0,0 0)}
+      50%  {clip-path:polygon(50% 50%,0 0,100% 0,100% 0,100% 0,100% 0)}
+      75%, 100%  {clip-path:polygon(50% 50%,0 0,100% 0,100% 100%,100% 100%,100% 100%)}
+  }
+}

@@ -45,36 +45,20 @@ class DeleteParticipation extends Action
 	public function execute() {
 		$postdata = $this->getRequest()->getPostValue();
 	
-		$apiUrl = $this->helper->getApiBaseUrl() . '/v1/contest/participation/delete';
+		$apiUrl = $this->helper->getApiBaseUrl() . '/v1/participation/' . $postdata['contestId'];
 		
 		$clientKey = $this->scopeConfig->getValue('authkeys/clientkey/clientpubkey');
 		$clientSecret = $this->scopeConfig->getValue('authkeys/clientkey/clientsecret');
 		
-		$headers = [
-			"Content-Type: application/json",
-			"clientKey: " . $clientKey,
-			"clientSecret: " . $clientSecret
-		];
-
 		/** @var CustomerInterface $customer */
 		$customer = $this->customerSession->getCustomer();
 
-		if (!$customer) {
-			return $this->resultJsonFactory->create()->setData(['success' => 'false']);
-		}
-
-		// Get user data from the session
-		$userId = $customer->getId();
-		$handle = $customer->getData('contestio_pseudo');
-		
-		$body = [
-			'userId' => $userId,
-			'handle' => $handle,
-			'contestId' => $postdata['contestId']
+		$headers = [
+			"Content-Type: application/json",
+			"clientKey: " . $clientKey,
+			"clientSecret: " . $clientSecret,
+			"externalId: " . $customer->getId()
 		];
-
-		// Encode the body data as JSON
-		$jsonBody = json_encode($body);
 		
 		$curl = curl_init();
 		curl_setopt_array($curl, array(
@@ -85,8 +69,8 @@ class DeleteParticipation extends Action
 		  CURLOPT_TIMEOUT => 0,
 		  CURLOPT_FOLLOWLOCATION => true,
 		  CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-		  CURLOPT_CUSTOMREQUEST => 'PATCH',
-		  CURLOPT_POSTFIELDS =>$jsonBody,
+		  CURLOPT_CUSTOMREQUEST => 'DELETE',
+		  CURLOPT_POSTFIELDS =>'',
 		  CURLOPT_HTTPHEADER =>$headers,
 		));
 
@@ -94,23 +78,22 @@ class DeleteParticipation extends Action
 		$httpStatus = curl_getinfo($curl, CURLINFO_HTTP_CODE);
 		curl_close($curl);
 
-		$data = json_decode($response, true);
+		$decoded = json_decode($response, true);
 		
-		if (isset($data['message'])) {
-			$data = array(
-				'success' => 'true',
-				'message' => $data['message'],
-				'status' => $httpStatus
-			);
-		} else {
-			$data = array('success' => 'false');
+		$data = array(
+			'success' => $httpStatus === 200
+		);
+
+		if ($httpStatus !== 200) {
+			$data['error'] = true;
+			$data['message'] = isset($decoded['message']) ? $decoded['message'] : 'Une erreur est survenue';
 		}
 
-		if (json_last_error() === JSON_ERROR_NONE) {
+		if ($httpStatus === 200 || json_last_error() === JSON_ERROR_NONE) {
 			return $this->resultJsonFactory->create()->setData($data);
 		}
 
 		// Return false if unable to decode JSON
-		return $this->resultJsonFactory->create()->setData(['success' => 'false']);
+		return $this->resultJsonFactory->create()->setData(['success' => false]);
 	}
 }

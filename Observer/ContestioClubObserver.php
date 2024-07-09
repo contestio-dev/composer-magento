@@ -89,48 +89,23 @@ class ContestioClubObserver implements ObserverInterface
 
         try {
             if ($cookieValue) {
-                $customer->setCustomAttribute('from_contestio', 1);
-                $this->customerRepository->save($customer);
-
-                $pseudo = $customer->getCustomAttribute('contestio_pseudo') && $customer->getCustomAttribute('contestio_pseudo')->getValue() !== 'null'
-                    ? $customer->getCustomAttribute('contestio_pseudo')->getValue()
-                    : "";
+                // Clear the cookie
+                $this->cookieManager->deleteCookie('contestioclub');
 
                 $payload = [
                     'externalId' => $customer->getId(),
                     'email' => $customer->getEmail(),
-                    'pseudo' => $pseudo,
                     'fname' => $customer->getFirstName(),
                     'lname' => $customer->getLastName(),
                     'isFromContestio' => true
                 ];
-                $response = $this->postCustomerData($payload);
-                $this->logger->info('cabesto club customer #' . $customer->getId() . ' registration post data: ' . json_encode($payload));
-                $this->logger->info('cabesto club customer #' . $customer->getId() . ' registration data submit response: ' . $response);
+
+                $this->postCustomerData($payload);
             }
         } catch (\Exception $e) {
             $this->logger->error('cabesto club customer generation error: ' . $e->getMessage());
         }
     }
-
-    // /**
-    //  * Calculate age based on DOB.
-    //  *
-    //  * @param string $dob
-    //  * @return int
-    //  */
-    // private function calculateAge($dob)
-    // {
-    //     if (!$dob) {
-    //         return "";
-    //     }
-
-    //     $dobDate = new \DateTime($dob);
-    //     $now = new \DateTime();
-    //     $age = $now->diff($dobDate)->y;
-
-    //     return $age;
-    // }
 
     /**
      * Post customer data to external API.
@@ -169,7 +144,6 @@ class ContestioClubObserver implements ObserverInterface
         ]);
 
         $response = curl_exec($curl);
-        $httpStatus = curl_getinfo($curl, CURLINFO_HTTP_CODE);
         curl_close($curl);
 
         return $response;

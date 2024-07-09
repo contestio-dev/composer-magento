@@ -3,7 +3,6 @@
 namespace Contestio\Connect\Controller\Ajax;
 
 use Magento\Framework\App\Action\Action;
-// use Magento\Customer\Api\CustomerRepositoryInterface;
 use Magento\Framework\App\Action\Context;
 use Magento\Framework\HTTP\Client\Curl;
 use Magento\Framework\App\Config\ScopeConfigInterface;
@@ -45,37 +44,24 @@ class Addlike extends Action
 	public function execute() {
 		$postdata = $this->getRequest()->getPostValue();
 	
-		$apiUrl = $this->helper->getApiBaseUrl() . '/v1/contest/participation/like';
+		$apiUrl = $this->helper->getApiBaseUrl() . '/v1/participation/like/' . $postdata['participationId'];
 		
 		$clientKey = $this->scopeConfig->getValue('authkeys/clientkey/clientpubkey');
 		$clientSecret = $this->scopeConfig->getValue('authkeys/clientkey/clientsecret');
-		
-		$headers = [
-			"Content-Type: application/json",
-			"clientKey: " . $clientKey,
-			"clientSecret: " . $clientSecret
-		];
 
 		/** @var CustomerInterface $customer */
 		$customer = $this->customerSession->getCustomer();
 
 		if (!$customer) {
-			return $this->resultJsonFactory->create()->setData(['success' => 'false']);
+			return $this->resultJsonFactory->create()->setData(['success' => false]);
 		}
-
-		// Get user data from the session
-		$userId = $customer->getId();
-		$handle = $customer->getData('contestio_pseudo');
 		
-		$body = [
-			'participationId' => $postdata['participationId'],
-			'contestId' => $postdata['contestId'],
-			'userId' => $userId,
-			'handle' => $handle
+		$headers = [
+			"Content-Type: application/json",
+			"clientKey: " . $clientKey,
+			"clientSecret: " . $clientSecret,
+			"externalId: " . $customer->getId()
 		];
-
-		// Encode the body data as JSON
-		$jsonBody = json_encode($body);
 		
 		$curl = curl_init();
 		curl_setopt_array($curl, array(
@@ -87,7 +73,7 @@ class Addlike extends Action
 		  CURLOPT_FOLLOWLOCATION => true,
 		  CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
 		  CURLOPT_CUSTOMREQUEST => 'POST',
-		  CURLOPT_POSTFIELDS =>$jsonBody,
+		  CURLOPT_POSTFIELDS =>'',//$jsonBody,
 		  CURLOPT_HTTPHEADER =>$headers,
 		));
 
@@ -95,24 +81,25 @@ class Addlike extends Action
 		$httpStatus = curl_getinfo($curl, CURLINFO_HTTP_CODE);
 		curl_close($curl);
 
-		$data = json_decode($response, true);
+		$data = null;
 		
-		if (isset($data['message'])) {
+		if ($httpStatus === 201) {
 			$data = array(
-				'success' => 'true',
-				'message' => $data['message'],
-				'alreadyLiked' => !!isset($data['alreadyLiked']),
-				'status' => $httpStatus
+				'success' => true
 			);
 		} else {
-			$data = array('success' => 'false');
+			$decoded = json_decode($response, true);
+			$data = array(
+				'success' => false,
+				'message' => isset($decoded['message']) ? $decoded['message'] : 'Une erreur est survenue'
+			);
 		}
 
-		if (json_last_error() === JSON_ERROR_NONE) {
+		if ($httpStatus === 201 || json_last_error() === JSON_ERROR_NONE) {
 			return $this->resultJsonFactory->create()->setData($data);
 		}
 
 		// Return false if unable to decode JSON
-		return $this->resultJsonFactory->create()->setData(['success' => 'false']);
+		return $this->resultJsonFactory->create()->setData(['success' => false]);
 	}
 }

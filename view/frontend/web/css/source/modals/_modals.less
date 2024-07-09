@@ -1,0 +1,409 @@
+/* Overlay Styles */
+.contestio_overlay {
+  z-index: 50;
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  left: 0;
+  top: 0;
+
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(10px);
+  border-radius: 10px;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/*Dialog Styles*/
+dialog,
+.contestio_overlay aside,
+.contest_preview {
+  padding: 1rem 3rem;
+  background: white;
+  width: 100%;
+  max-width: 360px;
+  max-height: 65vh; // Overlay resized to 65vh
+  overflow-y: auto;
+  padding-top: 2rem;
+  border-radius: 20px;
+  border: 0;
+  box-shadow: 0 5px 30px 0 rgba(0, 0, 0, 0.1);
+  animation: fadeIn 400ms ease both;
+  position: relative;
+  z-index: 100;
+
+  &.increaseZ {
+    // Increase z-index for the modal over another modal
+    z-index: 150;
+  }
+
+  // Full width on mobile
+  @media (max-width: 768px) {
+    width: 90%;
+    max-width: calc(100% - 20px);
+    padding: 1rem;
+  }
+
+  &:focus,
+  &:active,
+  &:hover {
+    outline: none;  // Désactiver la bordure par défaut du focus
+    box-shadow: 0 5px 30px 0 rgba(0, 0, 0, 0.1);  // Assurer que l'ombre reste visible
+  }
+  
+  .x {
+    filter: grayscale(1);
+    border: none;
+    background: none;
+    position: absolute;
+    top: 15px;
+    right: 10px;
+    transition: filter 0.3s ease, transform 0.3s ease;
+    cursor: pointer;
+    transform-origin: center;
+    z-index: 999;
+
+    &:hover {
+      filter: grayscale(0);
+      transform: scale(1.1);
+    }
+  }
+
+  h2 {
+    font-weight: 600;
+    font-size: 2rem;
+    padding-bottom: 1rem;
+  }
+
+  p {
+    font-size: 1.5rem;
+    padding: 0.5rem 0;
+  }
+
+  .full-width {
+    width: 100%;
+  }
+
+  .error-msg {
+    width: 100%;
+    text-align: center;
+    font-size: 1.4rem;
+    font-weight: 500;
+    margin-top: 1rem;
+
+    .error {
+      color: var(--contestio-danger);
+    }
+
+    .success {
+      color: var(--contestio-success);
+    }
+  }
+
+  select {
+    width: 100%;
+    height: auto;
+    padding: 0.7rem 1rem;
+    margin-top: 0.5rem;
+    margin-bottom: 1rem;
+    background-color: #f8f8ff;
+    border: 2px #dedede solid;
+    border-radius: 5px;
+    outline: none;
+    font-size: 1.5rem;
+    transition: border-color 0.3s ease;
+
+    &:active,
+    &:focus {
+      border-color: var(--contestio-primary);
+      box-shadow: none;
+      outline: none;
+    }
+  }
+
+  textarea {
+    width: 100%;
+    padding: 1rem;
+    margin-top: 1rem;
+    background-color: #f8f8ff;
+    border: 2px #dedede solid;
+    border-radius: 5px;
+    outline: none;
+    font-size: 1.5rem;
+    transition: border-color 0.3s ease;
+
+    max-height: 10rem;
+    resize: vertical;
+
+    &:active,
+    &:focus {
+      border-color: var(--contestio-primary);
+      box-shadow: none;
+      outline: none;
+    }
+  }
+
+  footer {
+    width: 100%;
+    display: flex;
+    justify-content: flex-end;
+    padding: 2rem 0;
+
+    button {
+      outline: none;
+      border: none;
+      background: none;
+      transition: all 0.3s ease;
+
+      // First button (Cancel)
+      &:first-child {
+        color: var(--contestio-black);
+        background: var(--contestio-white);
+        border: solid 1px var(--contestio-grey-100);
+        border-radius: 8px;
+        padding: 10px;
+        margin-right: 10px;
+
+        &:hover,
+        &:active,
+        &:focus {
+          border-color: var(--contestio-primary);
+          color: var(--contestio-primary);
+        }
+      }
+
+      // Second button (Confirm)
+      &:last-child {
+        color: var(--contestio-white);
+        background: var(--contestio-danger);
+        border-radius: 8px;
+        padding: 10px;
+
+        &.transparent {
+          background: none;
+          color: var(--contestio-black);
+          border: none;
+        }
+
+        &.success {
+          background: var(--contestio-primary);
+        }
+
+        &:hover,
+        &:active,
+        &:focus {
+          border: none;
+          transform: scale(0.97);
+
+          &.success {
+            background: var(--contestio-secondary);
+          }
+
+          &.transparent {
+            background: none;
+          }
+        }
+      }
+    }
+  }
+
+  // Login form
+  &.withForm {
+    max-width: 400px;
+    color: var(--contestio-black);
+
+    h2 {
+      font-size: 3.5rem;
+    }
+
+    form {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+
+      .field {
+        width: 100%;
+        margin-bottom: 1rem;
+
+        label {
+          width: 100%;
+          text-align: left;
+          font-size: 1.5rem;
+        }
+
+        input {
+          width: 100%;
+          padding: 1rem;
+          margin-top: 0.5rem;
+          background-color: #f8f8ff;
+          border: 2px #dedede solid;
+          border-radius: 5px;
+          outline: none;
+          font-size: 1.5rem;
+          transition: all 0.3s ease;
+
+          &:active,
+          &:focus {
+            border-color: var(--contestio-primary);
+            box-shadow: none;
+            outline: none;
+          }
+        }
+
+        .forgetPassword {
+          width: 100%;
+          display: flex;
+          justify-content: space-between;
+          
+          a {
+            color: var(--contestio-info);
+            width: 100%;
+            text-align: right;
+            text-decoration: none;
+            transition: all 0.3s ease;
+
+            &:hover,
+            &:active,
+            &:focus {
+              color: var(--contestio-primary);
+            }
+          }
+        }
+      }
+  
+      button[type="submit"] {
+        width: fit-content;
+        background: var(--contestio-primary);
+        color: var(--contestio-white);
+        border: none;
+        outline: none;
+        border-radius: 30px;
+  
+        padding: 1rem 2rem;
+        margin: 1rem auto 1rem auto;
+  
+        font-size: 1.5rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+  
+        &:hover,
+        &:active,
+        &:focus {
+          background: var(--contestio-secondary);
+          border: none;
+        }
+      }
+    }
+  }
+
+  p {
+    &.light {
+      color: var(--contestio-grey-200);
+      font-size: 1.3rem;
+      margin-top: 1rem;
+      text-align: center;
+
+      &.mt-0 {
+        margin-top: 0;
+      }
+    }
+    &.error-msg {
+      color: var(--contestio-danger);
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-top: 1rem;
+      text-align: center;
+
+      &:empty {
+        display: none;
+      }
+    }
+  }
+
+  .response {
+    font-size: 1.5rem;
+    width: 90%;
+    width: auto;
+    text-align: center;
+    padding: 1rem;
+    margin: 0.2rem auto;
+
+    // Hide if empty
+    &:empty {
+      display: none;
+    }
+
+    b.error {
+      color: var(--contestio-danger);
+    }
+    b.success {
+      color: var(--contestio-success);
+    }
+  }
+
+  .survey_answers {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    width: 100%;
+    
+    .answer {
+      width: 100%;
+      padding: 0;
+      border-radius: 5px;
+
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
+
+      transition: all 0.3s ease;
+
+      label {
+        font-size: 1.5rem;
+        text-align: left;
+        cursor: pointer;
+        padding: 0.5rem;
+
+        display: block;
+        width: calc(100% - 3rem);
+      }
+
+      // Radio
+      input {
+        width: 3rem;
+
+        // Color
+        accent-color: var(--contestio-primary);
+
+        &:active,
+        &:focus {
+          outline: none;
+          box-shadow: none;
+        }
+      }
+
+      // Hover effect
+      &:hover {
+        cursor: pointer;
+        background: var(--contestio-grey-100);
+      }
+    }
+  }
+
+  @import './_modal_participation.less';
+  @import './_modal_twopart.less';
+  @import './_modal_preview.less';
+  @import './_modal_survey.less';
+}
+
+@keyframes fadeIn {
+	from {
+		opacity: 0;
+	}
+	to {
+		opacity: 1;
+	}
+}
