@@ -8,7 +8,7 @@ $currentPageUrl = str_replace('/index/', '/', $currentPageUrl);
 $authfailed = 0;
 $notfound = 0;
 $serverError = 0;
-$homeConfigData = [];
+$homePage = [];
 $navButtons = [];
 
 $isLogged = false;
@@ -19,13 +19,13 @@ $isFirstCustomBlock = true;
 try {
 	$navDatas = $block->buttonsAndUser();
 	$navButtons = isset($navDatas['buttons']) ? $navDatas['buttons'] : [];
-	$homeConfigData = $block->fetchHomeConfigData();
+	$homePage = $block->fetchHomeConfigData();
 
-	if (isset($homeConfigData['code']) && $homeConfigData['code'] == 'AUTH_401') {
+	if (isset($homePage['code']) && $homePage['code'] == 'AUTH_401') {
 		throw new Exception('Unauthorized');
 	}
 
-	if (!$homeConfigData || !isset($homeConfigData['pageSections']) || empty($homeConfigData['pageSections'])) {
+	if (!$homePage || !is_array($homePage) || $homePage === []) {
 		throw new Exception('Not found');
 	}
 
@@ -125,7 +125,7 @@ if ($serverError) {
 	<!-- / Navbar with custom buttons -->
 
 	<div class="contestio-main-content gap-top-35">
-		<?php foreach ($homeConfigData['pageSections'] as $row) : ?>
+		<?php foreach ($homePage as $row) : ?>
 			<?php if ($row['elementType'] !== 'other'): ?>
 				<?php $button = isset($row['button']) ? $row['button'] : null; ?>
 

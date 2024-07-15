@@ -41,6 +41,16 @@ class Topmenu
             \Magento\Store\Model\ScopeInterface::SCOPE_STORE
         );
 
+        $showButton = $this->scopeConfig->getValue(
+            'nav_custom/nav_button/show',
+            \Magento\Store\Model\ScopeInterface::SCOPE_STORE
+        );
+
+        // Not print the button if disabled from admin
+        if ($showButton === 'hide') {
+            return;
+        }
+
         // Is active if routes starts with 'contestio'
         $isActive = strpos($this->_urlBuilder->getCurrentUrl(), '/contestio') !== false;
 

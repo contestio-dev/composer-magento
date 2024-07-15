@@ -2,6 +2,7 @@
 <page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" layout="1column" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
  <head>
 		<css src="Contestio_Connect::css/contestio.css"/>
+		<script src="Contestio_Connect::js/handle_popup.js"/>
 	</head>
 	<body>
 		<referenceContainer name="content">

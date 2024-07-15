@@ -174,8 +174,14 @@ class Index extends \Magento\Framework\View\Element\Template
         ));
 
         $response = curl_exec($curl);
-
+        $httpStatus = curl_getinfo($curl, CURLINFO_HTTP_CODE);
         curl_close($curl);
+
+        if ($httpStatus === 401 || $httpStatus === 403) {
+            return [
+                'code' => 'AUTH_401',
+            ];
+        }
 
         if ($response === false) {
             return false;
@@ -228,6 +234,12 @@ class Index extends \Magento\Framework\View\Element\Template
         $response = curl_exec($curl);
         $httpStatus = curl_getinfo($curl, CURLINFO_HTTP_CODE);
         curl_close($curl);
+
+        if ($httpStatus === 401 || $httpStatus === 403) {
+            return [
+                'code' => 'AUTH_401',
+            ];
+        }
 
         if ($response === false || $httpStatus !== 200) {
             return false;

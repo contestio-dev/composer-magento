@@ -146,6 +146,7 @@
   border: solid 1px var(--contestio-grey-100);
   border-radius: 10px;
   box-sizing: border-box;
+  margin: 2rem auto;
 }
 .contestio-main-container.contestio_overlay_open {
   min-height: 400px;

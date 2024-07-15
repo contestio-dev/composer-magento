@@ -168,6 +168,13 @@ class Index extends \Magento\Framework\View\Element\Template
 
         // Get response
         $response = $this->curlClient->getBody();
+        $httpStatus = $this->curlClient->getStatus();
+
+        if ($httpStatus === 401 || $httpStatus === 403) {
+            return [
+                'code' => 'AUTH_401',
+            ];
+        }
 
         // Decode JSON response
         $data = json_decode($response, true);

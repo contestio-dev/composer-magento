@@ -332,6 +332,9 @@ require(['jquery'], function($) {
 
 	let lastScrollTop = 0;
 
+	const mainContainer = document.getElementsByClassName('contestio-main-container')[0] || null;
+	const getScrollTop = () => (mainContainer?.getBoundingClientRect()?.top * -1) + $(window).scrollTop() - 30 // 30px above main container
+
 	// Set pseudo in navbar if logged in
 	<?php if($handle): ?>
 		$('#contestio-header-text').html('Bonjour <span><?= $handle ?></span> 👋');
@@ -349,7 +352,7 @@ require(['jquery'], function($) {
 		$('.contestio-main-container').removeClass('contestio_overlay_open');
 
 		// Scroll to lastScrollTop
-		window.scrollTo(0, lastScrollTop);
+		lastScrollTop = handleOpen(mainContainer, window);
 	});
 
 	// Submit the like form
@@ -460,12 +463,7 @@ require(['jquery'], function($) {
 		$('.contestio-main-container').addClass('contestio_overlay_open');
 
 		// Update lastScrollTop
-		lastScrollTop = $(window).scrollTop();
-		
-		// Scroll top if mobile
-		if (window.innerWidth < 768) {
-			window.scrollTo(0, 0);
-		}
+		lastScrollTop = handleOpen(mainContainer, window);
 
 		// Check if user is logged
 		<?php if(!$isLogged): ?>

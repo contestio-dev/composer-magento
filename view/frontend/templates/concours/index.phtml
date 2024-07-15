@@ -894,9 +894,9 @@ if ($serverError) {
 
 <script>
 require(['jquery'], function($) {
-	// Init scroll position
+	// Init scroll position and main container
+	const mainContainer = document.getElementsByClassName('contestio-main-container')[0] || null;
 	let lastScrollTop = 0;
-
 	
 	// Listen on #participFile change and update the dialog
 	const canvas = document.getElementById('imageCanvas');
@@ -1006,7 +1006,10 @@ require(['jquery'], function($) {
 		$('#dialogLogin').removeClass('hidden');
 		$('.contestio_overlay').removeClass('hidden');
 
-		lastScrollTop = $(window).scrollTop();
+		lastScrollTop = handleOpen(mainContainer, window);
+
+		// Scroll top main top
+		lastScrollTop = handleOpen(mainContainer, window);
 
 		$('#dialogLogin').attr('data-scrollto', lastScrollTop);
 
@@ -1105,12 +1108,7 @@ require(['jquery'], function($) {
 		}
 
 		// Update last scroll position
-		lastScrollTop = $(window).scrollTop();
-
-		// Scroll top if mobile
-		if (window.innerWidth < 768) {
-			window.scrollTo(0, 0);
-		}
+		lastScrollTop = handleOpen(mainContainer, window);
 
 		// Show modal and overlay
 		$('#dialogParticipation').removeClass('hidden');
@@ -1131,12 +1129,7 @@ require(['jquery'], function($) {
 		$('.contestio-main-container').addClass('contestio_overlay_open');
 
 		// Update last scroll position
-		lastScrollTop = $(window).scrollTop();
-
-		// Scroll top if mobile
-		if (window.innerWidth < 768) {
-			window.scrollTo(0, 0);
-		}
+		lastScrollTop = handleOpen(mainContainer, window);
 
 		<?php if(!$userIdToCheck): ?>
 			// Add lastScrollTop to the login modal data-scroll
@@ -1171,24 +1164,14 @@ require(['jquery'], function($) {
 
 		// Show .full-width div
 		$('#dialogParticipForm .full-width').removeClass('hidden');
-
-		// Update last scroll position
-		lastScrollTop = $(window).scrollTop();
-
-		// Scroll top if mobile
-		if (window.innerWidth < 768) {
-			window.scrollTo(0, 0);
-		}
 	});
 	
 	// Submit the like form
 	$(document).on("submit", '#participationForm', function(e) {
 		e.preventDefault();
 
-		// Scroll top if mobile
-		if (window.innerWidth < 768) {
-			window.scrollTo(0, 0);
-		}
+		// Scroll top main top
+		lastScrollTop = handleOpen(mainContainer, window);
 
 		<?php if(!$userIdToCheck): ?>
 			// Hide participation form
@@ -1749,12 +1732,7 @@ require(['jquery'], function($) {
 		document.getElementById('deleteButton').setAttribute('data-contest', $(this).attr('data-contest'));
 
 		// Update last scroll position
-		lastScrollTop = $(window).scrollTop();
-
-		// Scroll top if mobile
-		if (window.innerWidth < 768) {
-			window.scrollTo(0, 0);
-		}
+		lastScrollTop = handleOpen(mainContainer, window);
 
 		// Show the modal and overlay
 		$('#dialogParticipUpdate').removeClass('hidden');
@@ -2055,12 +2033,7 @@ require(['jquery'], function($) {
 		e.preventDefault();
 
 		// Update last scroll position
-		lastScrollTop = $(window).scrollTop();
-
-		// Scroll top if mobile
-		if (window.innerWidth < 768) {
-			window.scrollTo(0, 0);
-		}
+		lastScrollTop = handleOpen(mainContainer, window);
 
 		// Show the modal and overlay
 		$('#dialogOrderby').removeClass('hidden');

@@ -11,30 +11,37 @@
             <resource>Contestio_Connect::configuration</resource>
             
             <group id="clientkey" translate="label" type="text" sortOrder="5" showInDefault="1" showInWebsite="1" showInStore="1">
-                <comment><![CDATA[Pour plus d'informations sur la configuration des clés d'authentification rendez-vous sur sur <a href="https://app.contestio.fr" target="_blank">app.contestio.fr</a> et allez sur la page intégration.]]></comment>
+                <comment><![CDATA[Pour plus d'informations sur la configuration des clés d'authentification rendez-vous sur sur <a href="https://app.contestio.fr" target="_blank">app.contestio.fr</a> et allez sur la page Mon entreprise, section clés d'authorisation.]]></comment>
                 <label>Clés d'authentification</label>
                 <field id="clientpubkey" translate="label comment" sortOrder="7" type="text" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Clé publique</label>
-                    <comment>e.g xxxxxxxxxxxx</comment>
-                    <validate>validate-number required-entry</validate>
+                    <comment>(Identifiant) e.g `contestio` OR `123456789`</comment>
+                    <validate>required-entry</validate>
                 </field>
-                <field id="clientsecret" translate="label comment" sortOrder="7" type="text" showInDefault="1" showInWebsite="1" showInStore="1">
+                <field id="clientsecret" type="password" translate="label comment" sortOrder="7" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Clé privée</label>
-                    <comment>e.g xxxxxxxxxxxx</comment>
-                    <validate>validate-number required-entry</validate>
+                    <comment>(Mot de passe) e.g `xxxxxxxxxxxx`</comment>
+                    <validate>required-entry</validate>
                 </field>
             </group>
         </section>
         
         <!-- New section - Personnalisez la barre de navigation -->
         <section id="nav_custom" translate="label" type="text" sortOrder="321" showInDefault="1" showInWebsite="1" showInStore="1">
-            <label>Barre de navigation</label>
+            <label>Bouton principal</label>
             <tab>contestio</tab>
             <resource>Contestio_Connect::configuration</resource>
 
             <group id="nav_button" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
                 <label>Paramètres par défaut du bouton</label>
                 <comment><![CDATA[Choisissez une icon à afficher sur le bouton principal de navigation]]></comment>
+
+                <field id="show" sortOrder="1" type="select" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Afficher le bouton</label>
+                    <comment>Afficher ou masquer le bouton dans la barre de navigation par défaut de Magento.</comment>
+                    <source_model>Contestio\Connect\Model\Config\Source\ToggleShow</source_model>
+                </field>
+                
                 <field id="text" translate="label comment" sortOrder="2" type="text" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Texte à afficher</label>
                     <comment>e.g. Le Club</comment>
@@ -76,71 +83,5 @@
                 </field>
             </group>
         </section>
-        
-        <!-- New section - Personnalisez les boutons -->
-        <!-- <section id="contest_button_settings" translate="label" type="text" sortOrder="322" showInDefault="1" showInWebsite="1" showInStore="1">
-            <label>Personnalisez les boutons du concours</label>
-            <tab>contestio</tab>
-            <resource>Contestio_Connect::configuration</resource>
-            <group id="contest_button_settings_group" translate="label" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
-                <label>Competition Button Settings</label>
-                <field id="competition_button_text" translate="label comment" sortOrder="1" type="text" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Competition Button Text</label>
-                    <comment>e.g. Enter Competition</comment>
-                    <validate>validate-no-html-tags</validate>
-                </field>
-                <field id="competition_button_size" translate="label comment" sortOrder="2" type="select" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Competition Button Size</label>
-                    <comment>e.g. 12pt, 13pt, 14pt</comment>
-                    <validate>validate-no-html-tags</validate>
-					<source_model>Contestio\Connect\Model\Config\ButtonSizeOptions</source_model>
-                </field>
-                <field id="competition_button_color" translate="label comment" sortOrder="3" type="text" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Competition Button Color</label>
-                    <comment>e.g. #FFFFFF</comment>
-                    <validate>validate-no-html-tags</validate>
-					<frontend_model>Contestio\Connect\Block\Color</frontend_model>
-                </field>
-                <field id="competition_button_background_color" translate="label comment" sortOrder="4" type="text" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Competition Button Background Color</label>
-                    <comment>e.g. #000000</comment>
-                    <validate>validate-no-html-tags</validate>
-					<frontend_model>Contestio\Connect\Block\Color</frontend_model>
-                </field>
-            </group>
-        </section> -->
-        
-        <!-- New section - Bouton pour participer au sondage -->
-        <!-- <section id="survey_button_settings" translate="label" type="text" sortOrder="323" showInDefault="1" showInWebsite="1" showInStore="1">
-            <label>Bouton pour participer au sondage</label>
-            <tab>contestio</tab>
-            <resource>Contestio_Connect::configuration</resource>
-            <group id="survey_button_settings_group" translate="label" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
-                <label>Survey Button Settings</label>
-                <field id="survey_button_text" translate="label comment" sortOrder="1" type="text" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Survey Button Text</label>
-                    <comment>e.g. Take Survey</comment>
-                    <validate>validate-no-html-tags</validate>
-                </field>
-                <field id="survey_button_size" translate="label comment" sortOrder="2" type="select" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Survey Button Size</label>
-                    <comment>e.g. 12pt, 13pt, 14pt</comment>
-                    <validate>validate-no-html-tags</validate>
-					<source_model>Contestio\Connect\Model\Config\ButtonSizeOptions</source_model>
-                </field>
-                <field id="survey_button_color" translate="label comment" sortOrder="3" type="text" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Survey Button Color</label>
-                    <comment>e.g. #FFFFFF</comment>
-                    <validate>validate-no-html-tags</validate>
-					<frontend_model>Contestio\Connect\Block\Color</frontend_model>
-                </field>
-                <field id="survey_button_background_color" translate="label comment" sortOrder="4" type="text" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Survey Button Background Color</label>
-                    <comment>e.g. #000000</comment>
-                    <validate>validate-no-html-tags</validate>
-					<frontend_model>Contestio\Connect\Block\Color</frontend_model>
-                </field>
-            </group>
-        </section> -->
     </system>
 </config>
