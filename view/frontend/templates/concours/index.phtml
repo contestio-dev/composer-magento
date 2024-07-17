@@ -16,7 +16,7 @@ $contestData = [];
 $isloggedin = false;
 $selectedValue = '';
 
-$handle = 0;
+$pseudo = 0;
 $firstname = null;
 $userIdToCheck = 0;
 
@@ -52,10 +52,9 @@ try {
 	}
 
 	if ($isloggedin) {
-		$customer = $block->getCustomerData();
-		$handle = isset($navDatas['pseudo']) ? $navDatas['pseudo'] : null;
-		$userIdToCheck = $customer['customer_id'];
-		$firstname = $customer['customer_fname'];
+		$pseudo = isset($navDatas['pseudo']) ? $navDatas['pseudo'] : null;
+		$firstname = isset($navDatas['firstName']) ? $navDatas['firstName'] : null;
+		$userIdToCheck = $navDatas['user_id'];
 	}
 } catch (Exception $e) {
 	if ($e->getMessage() === 'Unauthorized') {
@@ -354,7 +353,7 @@ if ($serverError) {
 				<h2>Nouvelle participation</h2>
 
 				<p>
-					Inscription au concours au nom de <strong><?= $handle ?></strong>.
+					Inscription au concours au nom de <strong><?= $pseudo ?></strong>.
 				</p>
 
 				<input
@@ -446,8 +445,8 @@ if ($serverError) {
 	<!-- Navbar with custom buttons -->
 	<div class="contestio-header contestio-btn-section">
 		<p id="contestio-header-text">
-			<?php if ($handle): ?>
-				Bonjour <span><?= $handle ?></span> 👋
+			<?php if ($pseudo): ?>
+				Bonjour <span><?= $pseudo ?></span> 👋
 			<?php endif; ?>
 		</p>
 
@@ -1136,7 +1135,7 @@ require(['jquery'], function($) {
 			$(document).find('#dialogLogin').attr('data-scrollto', lastScrollTop);
 			$(document).find('#dialogLogin').removeClass('hidden');
 			return false;
-		<?php elseif(!$handle): ?>
+		<?php elseif(!$pseudo): ?>
 			// If user is logged but no pseudo, show the pseudo form
 			$('#dialogPseudo').find('.firstName').html('<?= $firstname ?>');
 			$('#dialogPseudo').removeClass('hidden');
@@ -1181,7 +1180,7 @@ require(['jquery'], function($) {
 			$(document).find('#dialogLogin').attr('data-scrollto', lastScrollTop);
 			$(document).find('#dialogLogin').removeClass('hidden');
 			return false;
-		<?php elseif(!$handle): ?>
+		<?php elseif(!$pseudo): ?>
 			// Hide participation form
 			$('#dialogParticipation').addClass('hidden');
 
@@ -1852,7 +1851,7 @@ require(['jquery'], function($) {
 		<?php endif; ?>
 
 		// If user is logged but no pseudo, show the pseudo form
-		<?php if(!$handle): ?>
+		<?php if(!$pseudo): ?>
 			// Hide participation form, show pseudo form
 			$('#dialogPseudo').find('.firstName').html('<?= $firstname ?>');
 			$('#dialogParticipation').addClass('hidden');

@@ -30,11 +30,11 @@ try {
 	}
 
 	$isLogged = $block->isCustomerLoggedIn();
+	
 	if ($isLogged) {
 		$pseudo = isset($navDatas['pseudo']) ? $navDatas['pseudo'] : null;
-		$firstname = $block->getFirstname();
+		$firstname = isset($navDatas['firstName']) ? $navDatas['firstName'] : null;
 	}
-
 } catch (Exception $e) {
 	if ($e->getMessage() === 'Unauthorized') {
 		$authfailed = 1;

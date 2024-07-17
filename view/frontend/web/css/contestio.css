@@ -509,6 +509,8 @@ footer#contestio-footer img {
 }
 .competition-item .competition-item-photo img {
   margin-bottom: auto;
+  margin-left: auto;
+  margin-right: auto;
   width: 100%;
   height: fit-content;
   object-fit: cover;

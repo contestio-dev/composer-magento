@@ -17,8 +17,8 @@ $firstname = null;
 
 try {
 	$navDatas = $block->buttonsAndUser();
-	$navButtons = isset($navDatas['buttons']) ? $navDatas['buttons'] : [];
 	$surveyData = $block->fetchSurveyData();
+	$navButtons = isset($navDatas['buttons']) ? $navDatas['buttons'] : [];
 
 	if (isset($surveyData['code']) && $surveyData['code'] == 'AUTH_401') {
 		throw new Exception('Unauthorized');
@@ -28,13 +28,12 @@ try {
 		throw new Exception('Not found');
 	}
 	
-
 	$isLogged = $block->isCustomerLoggedIn();
+
 	if ($isLogged) {
 		$pseudo = isset($navDatas['pseudo']) ? $navDatas['pseudo'] : null;
-		$firstname = $block->getFirstname();
+		$firstname = isset($navDatas['firstName']) ? $navDatas['firstName'] : null;
 	}
-
 } catch (Exception $e) {
 	if ($e->getMessage() === 'Unauthorized') {
 		$authfailed = 1;

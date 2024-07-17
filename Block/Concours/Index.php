@@ -118,25 +118,12 @@ class Index extends \Magento\Framework\View\Element\Template
         // Check if user in response is the same as the current user
         $user = $data['user'] ?? null;
 
-        $customer = $this->customerSession->getCustomerDataObject();
-
-        // Update user infos if needed
-        if ($user) {
-            // User found in response, check if the firstname, lastname and email are the same
-            $customerFirstName = $customer->getFirstName();
-            $customerLastName = $customer->getLastName();
-            $customerEmail = $customer->getEmail();
-            $pseudo = $user['pseudo'] ?? null;
-
-            if ($user['firstName'] !== $customerFirstName || $user['lastName'] !== $customerLastName || $user['email'] !== $customerEmail) {
-                $this->upsertFinalUser($pseudo);
-            }
-        }
-
         // Return the buttons data
         return array(
             'buttons' => $data && isset($data['buttons']) ? $data['buttons'] : [],
-            'pseudo' => $user['pseudo'] ?? null,
+            'pseudo' => isset($user['pseudo']) ? $user['pseudo'] : null,
+            'firstName' => isset($user['firstName']) ? $user['firstName'] : null,
+            'user_id' => $this->customerSession->getCustomerId()
         );
     }
     
@@ -266,85 +253,9 @@ class Index extends \Magento\Framework\View\Element\Template
         return (bool)$this->httpContext->getValue(\Magento\Customer\Model\Context::CONTEXT_AUTH);
     }
     
-    public function getCustomerData()
-    {
-        if ($this->customerSession->isLoggedIn()) {
-            $customerId = $this->customerSession->getCustomerId();
-            $customerEmail = $this->customerSession->getCustomer()->getEmail();
-            $customerFirstName = $this->customerSession->getCustomer()->getFirstname();
-            $customerLastName = $this->customerSession->getCustomer()->getLastname();
-        } else {
-            $customerId = null;
-            $customerEmail = null;
-            $customerFirstName = null;
-            $customerLastName = null;
-        }
-        
-        return [
-            'customer_id' => $customerId,
-            'customer_email' => $customerEmail,
-            'customer_fname' => $customerFirstName,
-            'customer_lname' => $customerLastName,
-        ];
-    }
-    
     // Method to retrieve configuration values
     public function getConfigValue($path)
     {
         return $this->scopeConfig->getValue($path, \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
-    }
-
-    public function upsertFinalUser($pseudo)
-    {
-        /** @var CustomerInterface $customer */
-        $customer = $this->customerSession->getCustomerDataObject();
-
-        $apiUrl = $this->helper->getApiBaseUrl() . '/v1/users/final/upsert';
-        
-        $clientKey = $this->scopeConfig->getValue('authkeys/clientkey/clientpubkey');
-        $clientSecret = $this->scopeConfig->getValue('authkeys/clientkey/clientsecret');
-        
-        $headers = [
-            "Content-Type: application/json",
-            "clientKey: " . $clientKey,
-            "clientSecret: " . $clientSecret
-        ];
-
-        $body = [
-            'externalId' => $customer->getId(),
-            'pseudo' => $pseudo, // From API response
-            'email' => $customer->getEmail(),
-            'fname' => $customer->getFirstName(),
-            'lname' => $customer->getLastName()
-        ];
-
-        // Encode the body data as JSON
-        $jsonBody = json_encode($body);
-        
-        $curl = curl_init();
-        curl_setopt_array($curl, [
-            CURLOPT_URL => $apiUrl,
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_ENCODING => '',
-            CURLOPT_MAXREDIRS => 10,
-            CURLOPT_TIMEOUT => 0,
-            CURLOPT_FOLLOWLOCATION => true,
-            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-            CURLOPT_CUSTOMREQUEST => 'POST',
-            CURLOPT_POSTFIELDS => $jsonBody,
-            CURLOPT_HTTPHEADER => $headers,
-        ]);
-
-        curl_exec($curl);
-
-        $httpStatus = curl_getinfo($curl, CURLINFO_HTTP_CODE);
-
-        curl_close($curl);
-        
-        if ($httpStatus === 200) {
-            return true;
-        } else {
-            return false;
-        }
     }
 }
