@@ -22,10 +22,6 @@ try {
 	} else if (!$datas || !is_array($datas) || empty($datas)) {
 		throw new Exception('Participation not found');
 	}
-	
-	echo '<pre>';
-	print_r($datas);
-	echo '</pre>';
 
 	// Get the URL of the current page
 	$pageUrl = $this->getUrl('contestio/concours/?user=' . $user_pseudo, ['_secure' => true]);
