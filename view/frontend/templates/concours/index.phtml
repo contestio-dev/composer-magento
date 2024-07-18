@@ -13,6 +13,8 @@ $authfailed = 0;
 $notfound = 0;
 $serverError = 0;
 $contestData = [];
+$participationDatas = null; // If user is provided, get his participation
+$participationError = false; // True if participation not found
 $isloggedin = false;
 $selectedValue = '';
 
@@ -49,6 +51,14 @@ try {
 
 	if (!$contestData || empty($contestData)) {
 		throw new Exception('Not found');
+	}
+
+	if (isset($_GET['user']) && $_GET['user']) {
+		$participationDatas = $block->fetchParticipationByPseudo($_GET['user']);
+	
+		if (!$participationDatas || $participationDatas === false || empty($participationDatas)) {
+			$participationError = true;
+		}
 	}
 
 	if ($isloggedin) {
@@ -185,19 +195,44 @@ if ($serverError) {
 		<aside id="dialogParticipation" class="participation twoPart hidden">
 			<button aria-label="close" class="closeModalParticipation x">❌</button>
 
+			<?php
+			$postImage = $participationDatas && isset($participationDatas['presignedUrl']) ? $participationDatas['presignedUrl'] : '';
+			$postPseudo = $participationDatas && isset($participationDatas['pseudo']) ? $participationDatas['pseudo'] : 'nc';
+			$postDesc = $participationDatas && isset($participationDatas['description']) && !empty($participationDatas['description']) ? $participationDatas['description'] : "<i>Aucune description</i>";
+			$postRank = $participationDatas && isset($participationDatas['rank']) ? $participationDatas['rank'] : 'nc';
+			$postLikes = $participationDatas && isset($participationDatas['likes']) ? $participationDatas['likes'] : 'nc';
+			$postLiked = $participationDatas && isset($participationDatas['liked']) ? $participationDatas['liked'] : false;
+			$postId = $participationDatas && isset($participationDatas['_id']) ? $participationDatas['_id'] : '';
+			$postContestId = $participationDatas && isset($participationDatas['contestId']) ? $participationDatas['contestId'] : '';
+			$postPageUrl = $this->getUrl('contestio/concours') . "?user=" . $postPseudo;
+			$postShareFacebook = "https://www.facebook.com/sharer/sharer.php?u=" . $postPageUrl;
+			$postShareMessenger = "fb-messenger://share/?link=" . $postPageUrl;
+			$postShareTwitter = "https://twitter.com/intent/tweet?url=" . $postPageUrl;
+			?>
+
 			<div class="firstPart">
-				<img class='postImage partImage' src="" alt="Participation">
+				<img
+					class='postImage partImage'
+					src="<?php echo $postImage; ?>"
+					alt="Participation"
+				>
 			</div>
 
 			<form class="secondPart" id="participationForm">
 				<div class="full-width">
-					<h2>Participation de <strong class="postUser"></strong></h2>
+					<h2>Participation de
+						<strong class="postUser">
+							<?php echo $postPseudo; ?>
+						</strong>
+					</h2>
 					
-					<p class="postDescription"></p>
+					<p class="postDescription">
+						<?php echo $postDesc; ?>
+					</p>
 				</div>
 
-				<input type="hidden" class="participationId" name="participationId" value="">
-				<input type="hidden" class="contestId" name="contestId" value="">
+				<input type="hidden" class="participationId" name="participationId" value="<?php echo $postId; ?>">
+				<input type="hidden" class="contestId" name="contestId" value="<?php echo $postContestId; ?>">
 
 				<div class="contestio_dialog_body">
 					<div class="actions_div">
@@ -207,21 +242,25 @@ if ($serverError) {
 								id="likeImg"
 								width="30"
 								height="30"
-								src=""
+								src="<?php echo $this->getViewFileUrl($postLiked ? 'Contestio_Connect::images/heart.png' : 'Contestio_Connect::images/heart-nofill.png'); ?>"
 								alt="Likes"
 								data-filled="<?php echo $this->getViewFileUrl('Contestio_Connect::images/heart.png'); ?>"
 								data-empty="<?php echo $this->getViewFileUrl('Contestio_Connect::images/heart-nofill.png'); ?>"
 							/>
-							<span class="postLikes"></span>
+							<span class="postLikes">
+								<?php echo $postLikes; ?>
+							</span>
 						</div>
 
 						<div class="rank">
-							<span class="postRank"></span>
+							<span class="postRank">
+								<?php echo $postRank; ?>
+							</span>
 							<img
 								id="rankImg"
 								width="30"
 								height="30"
-								src="<?php echo $this->getViewFileUrl('Contestio_Connect::images/podium.png'); ?>"
+								src="<?php echo $this->getViewFileUrl('Contestio_Connect::images/'.($postRank === 1 ? 'medal_gold.webp' : ($postRank === 2 ? 'medal_silver.webp' : ($postRank === 3 ? 'medal_bronze.webp' : 'podium.png')))); ?>"
 								alt="Classement"
 								data-podium="<?php echo $this->getViewFileUrl('Contestio_Connect::images/podium.png'); ?>"
 								data-gold="<?php echo $this->getViewFileUrl('Contestio_Connect::images/medal_gold.webp'); ?>"
@@ -247,12 +286,12 @@ if ($serverError) {
 				</div>
 
 				<footer>
-					<ul class="socials_links" data-objectid="">
+					<ul class="socials_links" data-objectid="<?php echo $postId; ?>">
 						<li class="fb-link">
 							<a
 								class="facebook"
 								title="facebook"
-								href="#"
+								href="<?php echo $postShareFacebook; ?>"
 								target="_blank"
 							>
 								<img width="30" height="30" src="<?php echo $this->getViewFileUrl('Contestio_Connect::images/share-facebook.svg'); ?>" alt="Facebook" />
@@ -263,7 +302,7 @@ if ($serverError) {
 							<a
 								class="messenger"
 								title="messenger"
-								href="#"
+								href="<?php echo $postShareMessenger; ?>"
 								target="_blank"
 							>
 								<img width="30" height="30" src="<?php echo $this->getViewFileUrl('Contestio_Connect::images/share-messenger.svg'); ?>" alt="Messenger" />
@@ -274,7 +313,7 @@ if ($serverError) {
 							<a
 								class="twitter"
 								title="twitter"
-								href="#"
+								href="<?php echo $postShareTwitter; ?>"
 								target="_blank"
 							>
 								<img width="30" height="30" src="<?php echo $this->getViewFileUrl('Contestio_Connect::images/share-twitter.svg'); ?>" alt="X" />
@@ -286,6 +325,8 @@ if ($serverError) {
 								href="#"
 								title="clipboard"
 								class='copybutton'
+								data-participation="<?php echo $postId; ?>"
+								data-pseudo="<?php echo $postPseudo; ?>"
 							>
 								<img width="30" height="30" src="<?php echo $this->getViewFileUrl('Contestio_Connect::images/copy-code.svg'); ?>" alt="Clipboard" />
 							</a>
@@ -546,8 +587,6 @@ if ($serverError) {
 				<!-- Print contest -->
 				<?php elseif($row['type'] === 'contest'): ?>
 					<?php 
-						// $contestIdToCheck = $row['_id'];
-						// $contestData = $block->fetchContentDataById($contestIdToCheck, $sortBy, $orderBy);
 						$contestData = $row;
 
 						// Skip if contest not found
@@ -628,7 +667,10 @@ if ($serverError) {
 						<?php if ($isloggedin && isset($contestData['myParticipation'])) : ?>
 							<?php
 								$myPart = $contestData['myParticipation'];
-								$myPart['shareUrl'] = $pageUrl . "?participationId=" . $myPart['_id'];
+								$myPartShareUrl = $pageUrl . "?user=" . $myPart['pseudo'];
+								$myPartFacebook = "https://www.facebook.com/sharer/sharer.php?u=" . $myPartShareUrl;
+								$myPartMessenger = "fb-messenger://share/?link=" . $myPartShareUrl;
+								$myPartTwitter = "https://twitter.com/intent/tweet?url=" . $myPartShareUrl;
 							?>
 
 							<div class="contest_preview participation twoPart">
@@ -711,7 +753,7 @@ if ($serverError) {
 													<a
 														class="facebook"
 														title="facebook"
-														href="https://www.facebook.com/sharer/sharer.php?u=<?= $myPart['shareUrl'] ?>"
+														href="<?= $myPartFacebook ?>"
 														target="_blank"
 													>
 														<img width="30" height="30" src="<?php echo $this->getViewFileUrl('Contestio_Connect::images/share-facebook.svg'); ?>" alt="" />
@@ -721,7 +763,7 @@ if ($serverError) {
 													<a
 														class="messenger"
 														title="messenger"
-														href="fb-messenger://share/?link=<?= $myPart['shareUrl'] ?>"
+														href="<?= $myPartMessenger ?>"
 														target="_blank"
 													>
 														<img width="30" height="30" src="<?php echo $this->getViewFileUrl('Contestio_Connect::images/share-messenger.svg'); ?>" alt="" />
@@ -731,7 +773,7 @@ if ($serverError) {
 													<a
 														class="twitter"
 														title="twitter"
-														href="https://twitter.com/intent/tweet?url=<?= $myPart['shareUrl'] ?>"
+														href="<?= $myPartTwitter ?>"
 														target="_blank"
 													>
 														<img width="30" height="30" src="<?php echo $this->getViewFileUrl('Contestio_Connect::images/share-twitter.svg'); ?>" alt="" />
@@ -742,7 +784,7 @@ if ($serverError) {
 														href="#"
 														title="clipboard"
 														class='copybutton'
-														data-participation="<?= $myPart['_id'] ?>"
+														data-pseudo="<?= $myPart['pseudo'] ?>"
 													>
 													<img width="30" height="30" src="<?php echo $this->getViewFileUrl('Contestio_Connect::images/copy-code.svg'); ?>" alt="" />
 												</a>
@@ -795,11 +837,11 @@ if ($serverError) {
 										data-description="<?= htmlspecialchars($participant['description'], ENT_QUOTES, 'UTF-8'); ?>"
 										data-image="<?= $participant['presignedUrl'] ?>"
 										data-liked="<?php echo !!$participant['liked']; ?>"
-										data-shareurl="<?= $pageUrl ?>"
+										data-shareurl="<?= $pageUrl . "?user=" . $participant['pseudo'] ?>"
 										data-rank="<?= $participant['rank'] ?>"
-										data-facebook="https://www.facebook.com/sharer/sharer.php?u=<?php echo urlencode($pageUrl); ?>"
-										data-messenger="fb-messenger://share/?link=<?php echo urlencode($pageUrl); ?>"
-										data-twitter="https://twitter.com/intent/tweet?url=<?php echo urlencode($pageUrl); ?>"
+										data-facebook="https://www.facebook.com/sharer/sharer.php?u=<?php echo ($pageUrl . "?user=" . $participant['pseudo']); ?>"
+										data-messenger="fb-messenger://share/?link=<?php echo ($pageUrl . "?user=" . $participant['pseudo']); ?>"
+										data-twitter="https://twitter.com/intent/tweet?url=<?php echo ($pageUrl . "?user=" . $participant['pseudo']); ?>"
 										data-voted-today="<?php echo isset($contestData['votedToday']) && $contestData['votedToday'] ? 'true' : 'false'; ?>"
 									>
 										<!-- Participation item body -->
@@ -896,6 +938,31 @@ require(['jquery'], function($) {
 	// Init scroll position and main container
 	const mainContainer = document.getElementsByClassName('contestio-main-container')[0] || null;
 	let lastScrollTop = 0;
+
+	// Show the participation dialog if $participationDatas is set and $participationError === false
+	<?php if ($participationDatas && !$participationError): ?>
+		$('#dialogParticipation').removeClass('hidden');
+		$('.contestio_overlay').removeClass('hidden');
+		$('.contestio-main-container').addClass('contestio_overlay_open');
+
+		// Remove canLike class if already liked
+		<?php if ($postLiked): ?>
+			$(document).find('#dialogParticipation #likeImg').removeClass('canLike');
+			$(document).find('#dialogParticipation button[type="submit"]').prop('disabled', true);
+			$(document).find('#dialogParticipation button[type="submit"]').text('Déjà voté');
+		<?php elseif (isset($contestData['votedToday']) && $contestData['votedToday']): ?>
+			// Disable the button
+			$(document).find('#dialogParticipation #likeImg').removeClass('canLike');
+			$(document).find('#dialogParticipation button[type="submit"]').prop('disabled', true);
+			$(document).find('#dialogParticipation .votedTodayMsg').removeClass('hidden');
+		<?php else: ?>
+			// Enable the button
+			$(document).find('#dialogParticipation button[type="submit"]').prop('disabled', false);
+			$(document).find('#dialogParticipation .votedTodayMsg').addClass('hidden');
+		<?php endif; ?>
+
+		lastScrollTop = handleOpen(mainContainer, window);
+	<?php endif; ?>
 	
 	// Listen on #participFile change and update the dialog
 	const canvas = document.getElementById('imageCanvas');
@@ -913,6 +980,9 @@ require(['jquery'], function($) {
 
     // Remove class from main container
     $('.contestio-main-container').removeClass('contestio_overlay_open');
+		
+		// Remove ?user=XX from URL
+		history.pushState({}, document.title, window.location.pathname);
 
     // Scroll to the last scroll position
     $(window).scrollTop(lastScrollTop);
@@ -1047,6 +1117,9 @@ require(['jquery'], function($) {
 		dialog.querySelector('.report-link').setAttribute('data-user', compUser);
 		dialog.querySelector('.report-link').setAttribute('data-participation', participationid);
 		dialog.querySelector('.report-link').setAttribute('data-contest', contestid);
+
+		// Add user to current url
+		history.pushState({}, document.title, window.location.pathname + '?user=' + compUser);
 		
 		// Update #rankImg
 		const rankImg = dialog.querySelector('#rankImg');
@@ -1073,7 +1146,7 @@ require(['jquery'], function($) {
 		dialog.querySelector('.facebook').href = fblink;
 		dialog.querySelector('.messenger').href = messenger;
 		dialog.querySelector('.twitter').href = twlink;
-		dialog.querySelector('.copybutton').setAttribute('data-participation', participationid);
+		dialog.querySelector('.copybutton').setAttribute('data-pseudo', compUser);
 		dialog.querySelector('footer ul').setAttribute('data-objectid', participationid);
 
 		// Participation form (hidden fields)
@@ -1990,14 +2063,8 @@ require(['jquery'], function($) {
 	$(document).on("click", '.copybutton', function(e) {
 		e.preventDefault();
 		
-		let partId = $(this).attr('data-participation');
-
-		if (!partId) {
-			const form = $(this).closest('form');
-			partId = form.find('input[name="participationId"]').val();
-		}
-
-		const link = '<?php echo $this->getUrl('contestio/concours/index/'); ?>partid/'+partId;
+		const partPseudo = $(this).attr('data-pseudo');
+		const link = '<?php echo $this->getUrl('contestio/concours/'); ?>?user=' + partPseudo;
 		
 		// Create a temporary input element
 		const input = document.createElement('textarea');
