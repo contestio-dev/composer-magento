@@ -243,6 +243,62 @@ class Index extends \Magento\Framework\View\Element\Template
         return false;
     }
 
+        /**
+     * Fetch data from API
+     *
+     * @return array|false
+     */
+    public function fetchContentMetaDatas()
+    {
+        // API URL
+        $apiUrl = $this->helper->getApiBaseUrl() . '/v1/contests/metadatas';
+        
+        $clientKey = $this->scopeConfig->getValue('authkeys/clientkey/clientpubkey');
+        $clientSecret = $this->scopeConfig->getValue('authkeys/clientkey/clientsecret');
+        
+        $headers = [
+            "Content-Type: application/json",
+            "clientKey: " . $clientKey,
+            "clientSecret: " . $clientSecret
+        ];
+        
+        $curl = curl_init();
+        curl_setopt_array($curl, array(
+            CURLOPT_URL => $apiUrl,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_ENCODING => '',
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_TIMEOUT => 0,
+            CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST => 'GET',
+            CURLOPT_HTTPHEADER => $headers,
+        ));
+
+        $response = curl_exec($curl);
+        $httpStatus = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+        curl_close($curl);
+
+        if ($httpStatus === 401 || $httpStatus === 403) {
+            return [
+                'code' => 'AUTH_401',
+            ];
+        }
+
+        if ($response === false) {
+            return false;
+        }
+
+        // Decode JSON response
+        $data = json_decode($response, true);
+
+        if (json_last_error() === JSON_ERROR_NONE) {
+            return $data;
+        }
+        // Return false if unable to decode JSON
+        return false;
+    }
+
     /**
      * Fetch data from API
      *

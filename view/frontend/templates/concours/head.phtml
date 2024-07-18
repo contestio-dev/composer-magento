@@ -1,26 +1,70 @@
 <?php
 // Init variables
+$datas = null;
 $user_pseudo = null;
-$datas = [];
+$org_name = null;
+$contest_name = null;
+$banner_name = null;
+$banner_image = null;
+$banner_description = null;
+$contest_description = null;
+$participation_image = null;
 $pageUrl = null;
 
 try {
 	// Get from url (GET)
 	$user_pseudo = $this->getRequest()->getParam('user');
 
-	if (!$user_pseudo || empty($user_pseudo)) {
-		throw new Exception('Peuso not found');
+	if ($user_pseudo && !empty($user_pseudo)) {
+		$datas = $block->fetchParticipationByPseudo($user_pseudo);
 	}
 
-	$datas = $block->fetchParticipationByPseudo($user_pseudo);
+	$meta = $block->fetchContentMetaDatas();
 
-	if (isset($datas['code'])) {
-		if ($datas['code'] == 'AUTH_401') {
+	$banner = $meta['banner'] ?? null;
+	$contest = $meta['contest'] ?? null;
+
+	if (isset($meta['code'])) {
+		if ($datas['code'] === 'AUTH_401' || $meta['code'] === 'AUTH_401') {
 			throw new Exception('Unauthorized');
 		}
 		throw new Exception('Participation not found');
-	} else if (!$datas || !is_array($datas) || empty($datas)) {
-		throw new Exception('Participation not found');
+	}
+
+	// Get banner infos
+	if ($banner && isset($banner['presignedUrl'])) {
+		$banner_image = $banner['presignedUrl'];
+	}
+	if ($banner && isset($banner['name'])) {
+		$banner_name = $banner['name'];
+	}
+	if ($banner && isset($banner['description'])) {
+		$banner_description = $banner['description'];
+		// Keep onlt text (remove html tags) and limit to 200 characters
+		$banner_description = substr(strip_tags($banner_description), 0, 200);
+	}
+
+	// Get contest infos
+	if ($contest && isset($contest['name'])) {
+		$contest_name = $contest['name'];
+	}
+	if ($contest && isset($contest['description'])) {
+		$contest_description = $contest['description'];
+		// Keep onlt text (remove html tags) and limit to 200 characters
+		$contest_description = substr(strip_tags($contest_description), 0, 200);
+	}
+
+	// Get participation infos
+	if ($datas && isset($datas['presignedUrl'])) {
+		$participation_image = $datas['presignedUrl'];
+	}
+	if ($datas && isset($datas['pseudo'])) {
+		$user_pseudo = $datas['pseudo'];
+	}
+
+	// Get organization name
+	if ($meta && isset($meta['orgName'])) {
+		$org_name = $meta['orgName'];
 	}
 
 	// Get the URL of the current page
@@ -30,27 +74,55 @@ try {
 }
 ?>
 
-<?php if (isset($datas['pseudo'])): ?>
-	<meta property="og:title" content="@<?= htmlspecialchars($datas['pseudo'], ENT_QUOTES, 'UTF-8') ?>" />
-	<meta name="twitter:title" content="@<?= htmlspecialchars($datas['pseudo'], ENT_QUOTES, 'UTF-8') ?>" />
-
-	<!-- Meta description: Voter pour $pseudo -->
-	<meta property="og:description" content="Voter pour <?= htmlspecialchars($datas['pseudo'], ENT_QUOTES, 'UTF-8') ?>" />
-	<meta name="twitter:description" content="Voter pour <?= htmlspecialchars($datas['pseudo'], ENT_QUOTES, 'UTF-8') ?>" />
+<!-- Title : User pseudo and organization name or organization name -->
+<?php if (isset($user_pseudo) && isset($org_name)): ?>
+	<meta
+		property="og:title"
+		content="Votez pour @<?= htmlspecialchars($user_pseudo, ENT_QUOTES, 'UTF-8') ?> sur <?= htmlspecialchars($org_name, ENT_QUOTES, 'UTF-8') ?> !"
+	/>
+	<meta
+		name="twitter:title"
+		content="Votez pour @<?= htmlspecialchars($user_pseudo, ENT_QUOTES, 'UTF-8') ?> sur <?= htmlspecialchars($org_name, ENT_QUOTES, 'UTF-8') ?> !"
+	/>
+<?php elseif (isset($org_name)): ?>
+	<meta
+		property="og:title"
+		content="Voir le concours de <?= htmlspecialchars($org_name, ENT_QUOTES, 'UTF-8') ?>"
+	/>
+	<meta
+		name="twitter:title"
+		content="Voir le concours de <?= htmlspecialchars($org_name, ENT_QUOTES, 'UTF-8') ?>"
+	/>
 <?php endif; ?>
 
-<!-- Site name : Voir les participation du concours. -->
-<?php if (isset($datas['contestName'])): ?>
-	<meta property="og:site_name" content="Voir les participations du concours : <?= htmlspecialchars($datas['contestName'], ENT_QUOTES, 'UTF-8') ?>" />
-	<meta name="twitter:site" content="Voir les participations du concours : <?= htmlspecialchars($datas['contestName'], ENT_QUOTES, 'UTF-8') ?>" />
+<!-- Description : Contest description or banner description -->
+<?php if (isset($contest_description)): ?>
+	<meta property="og:description" content="<?= htmlspecialchars($contest_description, ENT_QUOTES, 'UTF-8') ?>" />
+	<meta name="twitter:description" content="<?= htmlspecialchars($contest_description, ENT_QUOTES, 'UTF-8') ?>" />
+<?php elseif (isset($banner_description)): ?>
+	<meta property="og:description" content="<?= htmlspecialchars($banner_description, ENT_QUOTES, 'UTF-8') ?>" />
+	<meta name="twitter:description" content="<?= htmlspecialchars($banner_description, ENT_QUOTES, 'UTF-8') ?>" />
 <?php endif; ?>
 
-<?php if (isset($datas['presignedUrl'])): ?>
-	<meta property="og:image" content="<?= htmlspecialchars($datas['presignedUrl'], ENT_QUOTES, 'UTF-8') ?>" />
-	<meta name="twitter:image" content="<?= htmlspecialchars($datas['presignedUrl'], ENT_QUOTES, 'UTF-8') ?>" />
+<!-- Site name : Name of current contest or banner name -->
+<?php if (isset($contest_name)): ?>
+	<meta property="og:site_name" content="<?= htmlspecialchars($contest_name, ENT_QUOTES, 'UTF-8') ?>" />
+	<meta name="twitter:site" content="<?= htmlspecialchars($contest_name, ENT_QUOTES, 'UTF-8') ?>" />
+<?php elseif (isset($banner_name)): ?>
+	<meta property="og:site_name" content="<?= htmlspecialchars($banner_name, ENT_QUOTES, 'UTF-8') ?>" />
+	<meta name="twitter:site" content="<?= htmlspecialchars($banner_name, ENT_QUOTES, 'UTF-8') ?>" />
 <?php endif; ?>
 
-<?php if ($pageUrl): ?>
+<!-- Image : Participation image or banner image -->
+<?php if (isset($participation_image)): ?>
+	<meta property="og:image" content="<?= htmlspecialchars($participation_image, ENT_QUOTES, 'UTF-8') ?>" />
+	<meta name="twitter:image" content="<?= htmlspecialchars($participation_image, ENT_QUOTES, 'UTF-8') ?>" />
+<?php elseif (isset($banner_image)): ?>
+	<meta property="og:image" content="<?= htmlspecialchars($banner_image, ENT_QUOTES, 'UTF-8') ?>" />
+	<meta name="twitter:image" content="<?= htmlspecialchars($banner_image, ENT_QUOTES, 'UTF-8') ?>" />
+<?php endif; ?>
+
+<?php if (isset($pageUrl)): ?>
 	<meta property="og:url" content="<?= htmlspecialchars($pageUrl, ENT_QUOTES, 'UTF-8') ?>" />
 <?php endif; ?>
 
